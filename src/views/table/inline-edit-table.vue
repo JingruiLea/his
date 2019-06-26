@@ -1,56 +1,94 @@
 <template>
   <div class="app-container">
-    <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
-      <el-table-column align="center" label="ID" width="80">
+    <el-table
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%"
+    >
+      <el-table-column
+        align="center"
+        label="ID"
+        width="80"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.uid }}</span>
         </template>
       </el-table-column>
 
-<!--      <el-table-column width="180px" align="center" label="登录名">-->
-<!--        <template slot-scope="scope">-->
-<!--          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
-<!--        </template>-->
-<!--      </el-table-column>-->
+      <!--      <el-table-column width="180px" align="center" label="登录名">-->
+      <!--        <template slot-scope="scope">-->
+      <!--          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
 
-      <el-table-column width="120px" align="center" label="登录名">
+      <el-table-column
+        width="120px"
+        align="center"
+        label="登录名"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="姓名">
+      <el-table-column
+        width="120px"
+        align="center"
+        label="姓名"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="100px" label="用户角色">
+      <el-table-column
+        width="100px"
+        label="用户角色"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.role }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="科室" width="110">
+      <el-table-column
+        class-name="status-col"
+        label="科室"
+        width="110"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.department }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="参与排班" width="110">
+      <el-table-column
+        class-name="status-col"
+        label="参与排班"
+        width="110"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.paiban }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="职称" width="110">
+      <el-table-column
+        class-name="status-col"
+        label="职称"
+        width="110"
+      >
         <template slot-scope="scope">
           <span>{{ scope.row.title }}</span>
         </template>
       </el-table-column>
 
 
-      <el-table-column align="center" label="Actions" width="120">
+      <el-table-column
+        align="center"
+        label="Actions"
+        width="120"
+      >
         <template slot-scope="{row}">
           <el-button
             v-if="row.edit"
