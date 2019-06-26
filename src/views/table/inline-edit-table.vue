@@ -3,53 +3,52 @@
     <el-table v-loading="listLoading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="ID" width="80">
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <span>{{ scope.row.uid }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="180px" align="center" label="Date">
+<!--      <el-table-column width="180px" align="center" label="登录名">-->
+<!--        <template slot-scope="scope">-->
+<!--          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>-->
+<!--        </template>-->
+<!--      </el-table-column>-->
+
+      <el-table-column width="120px" align="center" label="登录名">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.username }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="120px" align="center" label="Author">
+      <el-table-column width="120px" align="center" label="姓名">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.name }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column width="100px" label="Importance">
+      <el-table-column width="100px" label="用户角色">
         <template slot-scope="scope">
-          <svg-icon v-for="n in +scope.row.importance" :key="n" icon-class="star" class="meta-item__icon" />
+          <span>{{ scope.row.role }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="Status" width="110">
-        <template slot-scope="{row}">
-          <el-tag :type="row.status | statusFilter">
-            {{ row.status }}
-          </el-tag>
+      <el-table-column class-name="status-col" label="科室" width="110">
+        <template slot-scope="scope">
+          <span>{{ scope.row.department }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column min-width="300px" label="Title">
-        <template slot-scope="{row}">
-          <template v-if="row.edit">
-            <el-input v-model="row.title" class="edit-input" size="small" />
-            <el-button
-              class="cancel-btn"
-              size="small"
-              icon="el-icon-refresh"
-              type="warning"
-              @click="cancelEdit(row)"
-            >
-              cancel
-            </el-button>
-          </template>
-          <span v-else>{{ row.title }}</span>
+      <el-table-column class-name="status-col" label="参与排班" width="110">
+        <template slot-scope="scope">
+          <span>{{ scope.row.paiban }}</span>
         </template>
       </el-table-column>
+
+      <el-table-column class-name="status-col" label="职称" width="110">
+        <template slot-scope="scope">
+          <span>{{ scope.row.title }}</span>
+        </template>
+      </el-table-column>
+
 
       <el-table-column align="center" label="Actions" width="120">
         <template slot-scope="{row}">
@@ -78,7 +77,7 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/article'
+import { all } from '@/api/userManagement'
 
 export default {
   name: 'InlineEditTable',
@@ -108,12 +107,16 @@ export default {
   methods: {
     async getList() {
       this.listLoading = true
-      const { data } = await fetchList(this.listQuery)
-      const items = data.items
-      this.list = items.map(v => {
-        this.$set(v, 'edit', false) // https://vuejs.org/v2/guide/reactivity.html
-        v.originalTitle = v.title //  will be used when user click the cancel botton
-        return v
+      const { data } = await all(this.listQuery)
+      console.log(data)
+      const {users, roles, departments} = data
+      this.list = users.map(item => {
+        this.$set(item, 'edit', false) // https://vuejs.org/v2/guide/reactivity.html
+        item.originalTitle = item.title //  will be used when user click the cancel botton
+        item.paiban = '是'
+        item.department = departments.find(r => r.id == item.department_id).name
+
+        return item
       })
       this.listLoading = false
     },

@@ -15,6 +15,7 @@ export default function checkPermission(value) {
     })
 
     if (!hasPermission) {
+      console.error(`need roles!`)
       return false
     }
     return true

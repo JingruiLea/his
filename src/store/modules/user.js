@@ -36,14 +36,10 @@ const actions = {
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         console.log(response)
-        const data = response.data
-        if (data.code == 200) {
-          resolve()
-        } else {
-          reject()
-        }
-        commit('SET_TOKEN', data.code)
+        const {data} = response
+        commit('SET_TOKEN', data.token)
         setToken(data.token)
+        resolve()
       }).catch(error => {
         reject(error)
       })

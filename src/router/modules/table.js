@@ -28,7 +28,7 @@ const tableRouter = {
       path: 'inline-edit-table',
       component: () => import('@/views/table/inline-edit-table'),
       name: 'InlineEditTable',
-      meta: { title: 'Inline Edit' }
+      meta: { title: '基本信息管理' }
     },
     {
       path: 'complex-table',
