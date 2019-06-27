@@ -269,13 +269,13 @@ export default {
     },
     resetTemp() {
       this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+          id: undefined,
+          importance: 1,
+          remark: '',
+          timestamp: new Date(),
+          title: '',
+          type: '',
+          status: 'published'
       }
     },
     handleCreate() {

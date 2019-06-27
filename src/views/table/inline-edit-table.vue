@@ -115,7 +115,7 @@
 </template>
 
 <script>
-import { all } from '@/api/userManagement'
+import { all } from '@/api/userMana'
 
 export default {
   name: 'InlineEditTable',

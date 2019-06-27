@@ -109,6 +109,19 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/medicalRecord',
+    component: Layout,
+    redirect: '/guide/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/guide/index'),
+        name: '门诊病历首页',
+        meta: { title: '门诊病历首页', icon: 'guide', noCache: true }
+      }
+    ]
+  },
+  {
     path: '/profile',
     component: Layout,
     redirect: '/profile/index',
