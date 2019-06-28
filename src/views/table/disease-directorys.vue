@@ -11,9 +11,6 @@
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-      <el-select v-model="temp.name" placeholder="选择类型" filterable clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
-      </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
@@ -27,6 +24,10 @@
         reviewer
       </el-checkbox>
     </div>
+
+    <el-select v-model="tempClassification.name" placeholder="选择类型" filterable clearable class="filter-item" style="width: 130px">
+      <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
+    </el-select>
 
     <el-table
       :key="tableKey"
@@ -92,24 +93,24 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="编码" type="number">
-          <el-input v-model="tempDisease.id" />
+          <el-input v-model="temp.id" />
         </el-form-item>
         <el-form-item label="名称" prop="username">
-          <el-input v-model="tempDisease.name" />
+          <el-input v-model="temp.name" />
         </el-form-item>
         <el-form-item label="拼音" prop="username">
-          <el-input v-model="tempDisease.pinyin" />
+          <el-input v-model="temp.pinyin" />
         </el-form-item>
         <el-form-item label="分类" prop="username">
-          <el-select v-model="tempDisease.classification_id" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.classification_id" class="filter-item" placeholder="Please select">
             <el-option v-for="item,index in diseases" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="自定义名称" prop="department_id">
-          <el-input v-model="tempDisease. custom_name" />
+          <el-input v-model="temp. custom_name" />
         </el-form-item>
         <el-form-item label="自定义助记符" prop="department_id">
-          <el-input v-model="tempDisease. custom_pinyin" />
+          <el-input v-model="temp. custom_pinyin" />
         </el-form-item>
 
         <!--        <el-form-item label="Status">-->
@@ -214,11 +215,11 @@
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
-        temp: {
-          id: 1,
+        tempClassification: {
+          classification_id: 1,
           name: "阿米巴病"
         },
-        tempDisease: {
+        temp: {
           id: 115,
           code: "A06.051",
           classification_name: "阿米巴病",
@@ -244,7 +245,8 @@
       }
     },
     created() {
-      this.getList()
+      this.getDiseaseClassificationsList()
+      this.getDiseaseList()
       if(bus.diseaseClassifications.length == 0){
         bus.getDiseaseClassifications()
       }
@@ -253,7 +255,7 @@
       }
     },
     methods: {
-      getList() {
+      getDiseaseClassificationsList() {
         this.listLoading = true
         getAll().then(response => {
           const {data} = response
@@ -267,13 +269,16 @@
             this.listLoading = false
           }, 1.5 * 1000)
         })
-        getDisease({}).then(response => {
+      },
+      getDiseaseList() {
+        this.listLoading = true
+        getDisease().then(response => {
           const {data} = response
           const {diseases} = data
           bus.diseases = diseases
           this.list = diseases
           this.fullList = this.list
-          this.total = diseases.length
+          this.total = data.length
 
           // Just to simulate the time of the request
           setTimeout(() => {

@@ -49,6 +49,30 @@ const tableRouter = {
       meta: { title: '科室管理' }
     },
     {
+      path: 'registration-levels',
+      component: () => import('@/views/table/registration-levels'),
+      name: 'registration-levels',
+      meta: { title: '挂号等级管理' }
+    },
+    {
+      path: 'settlement-categorys',
+      component: () => import('@/views/table/settlement-categorys'),
+      name: 'settlement-categorys',
+      meta: { title: '支付方式管理' }
+    },
+    {
+      path: 'disease-directorys',
+      component: () => import('@/views/table/disease-directorys'),
+      name: 'disease-directorys',
+      meta: { title: '诊断目录管理' }
+    },
+    {
+      path: 'nondrugs',
+      component: () => import('@/views/table/nondrugs'),
+      name: 'nondrugs',
+      meta: { title: '非药品目录管理' }
+    },
+    {
       path: 'departments2',
       component: () => import('@/views/table/a'),
       name: 'departments2',
