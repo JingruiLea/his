@@ -25,7 +25,7 @@
       </el-checkbox>
     </div>
 
-    <el-select v-model="tempClassification.name" placeholder="选择类型" filterable clearable class="filter-item" style="width: 130px">
+    <el-select @change="handleChange" v-model="tempClassification.id" placeholder="选择类型" class="filter-item" style="width: 10em">
       <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
     </el-select>
 
@@ -103,14 +103,14 @@
         </el-form-item>
         <el-form-item label="分类" prop="username">
           <el-select v-model="temp.classification_id" class="filter-item" placeholder="Please select">
-            <el-option v-for="item,index in diseases" :key="index" :label="item.name" :value="item.id" />
+            <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="自定义名称" prop="department_id">
-          <el-input v-model="temp. custom_name" />
+          <el-input v-model="temp.custom_name" />
         </el-form-item>
         <el-form-item label="自定义助记符" prop="department_id">
-          <el-input v-model="temp. custom_pinyin" />
+          <el-input v-model="temp.custom_pinyin" />
         </el-form-item>
 
         <!--        <el-form-item label="Status">-->
@@ -149,7 +149,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, add, _delete, _import, getDisease} from '@/api/disease-directorys'
+  import {getAll, add, _delete, _import, getDisease, update} from '@/api/disease-directorys'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -189,13 +189,11 @@
     computed:{
       diseaseClassifications(){
         return bus.diseaseClassifications
-      },
-      disease(){
-        return bus.diseases
       }
     },
     data() {
       return {
+        diseases:null,
         tableKey: 0,
         list: null,
         fullList : null,
@@ -215,10 +213,7 @@
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
-        tempClassification: {
-          classification_id: 1,
-          name: "阿米巴病"
-        },
+        tempClassification: {},
         temp: {
           id: 115,
           code: "A06.051",
@@ -246,13 +241,11 @@
     },
     created() {
       this.getDiseaseClassificationsList()
-      this.getDiseaseList()
+
       if(bus.diseaseClassifications.length == 0){
-        bus.getDiseaseClassifications()
+        //bus.getDiseaseClassifications()
       }
-      if(bus.diseases.length == 0){
-        bus.getDiseases()
-      }
+
     },
     methods: {
       getDiseaseClassificationsList() {
@@ -260,25 +253,28 @@
         getAll().then(response => {
           const {data} = response
           bus.diseaseClassifications = data
+          console.log(data)
           this.list = data
           this.fullList = this.list
           this.total = data.length
-
+          this.tempClassification = {id:1,name:'阿米巴病'}
+          console.log(this.tempClassification)
+          this.getDiseaseList(this.tempClassification.id)
           // Just to simulate the time of the request
           setTimeout(() => {
             this.listLoading = false
           }, 1.5 * 1000)
         })
       },
-      getDiseaseList() {
+      getDiseaseList(id) {
         this.listLoading = true
-        getDisease().then(response => {
+        getDisease({classification_id:id}).then(response => {
           const {data} = response
           const {diseases} = data
           bus.diseases = diseases
           this.list = diseases
           this.fullList = this.list
-          this.total = data.length
+          this.total = diseases.length
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -332,7 +328,8 @@
             name: "急性阿米巴病",
             pinyin: "JXAMBB",
             custom_name: "",
-            custom_pinyin: ""
+            custom_pinyin: "",
+            classification_id: 1
         }
       },
       handleCreate() {
@@ -342,6 +339,10 @@
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
         })
+      },
+      handleChange(){
+        console.log(this.tempClassification)
+        this.getDiseaseList(this.tempClassification.id)
       },
       createData() {
         //this.$refs['dataForm'].validate((valid) => {
@@ -381,7 +382,7 @@
           if (valid) {
             const tempData = Object.assign({}, this.temp)
             tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            updateArticle(tempData).then(() => {
+            update(tempData).then(() => {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
@@ -409,6 +410,8 @@
             type: 'success',
             duration: 2000
           })
+          const index = this.list.indexOf(row)
+          this.list.splice(index, 1)
           this.getList()
         })
       },
@@ -440,7 +443,8 @@
             return v[j]
           }
         }))
-      }
+      },
+      getList(){}
     }
   }
 </script>

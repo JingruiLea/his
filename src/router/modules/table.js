@@ -73,6 +73,12 @@ const tableRouter = {
       meta: { title: '非药品目录管理' }
     },
     {
+      path: 'drugs',
+      component: () => import('@/views/table/drugs'),
+      name: 'drugs',
+      meta: { title: '药品目录管理' }
+    },
+    {
       path: 'departments2',
       component: () => import('@/views/table/a'),
       name: 'departments2',

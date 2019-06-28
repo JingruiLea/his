@@ -191,10 +191,7 @@ export default {
       listQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        sort: '+id'
+        importance: undefined
       },
       importanceOptions: [1, 2, 3],
       calendarTypeOptions,

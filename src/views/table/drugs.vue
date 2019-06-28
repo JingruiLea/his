@@ -50,9 +50,9 @@
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="拼音" prop="id" align="center">
+      <el-table-column label="包装单位" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.pinyin }}</span>
+          <span>{{ row.unit }}</span>
         </template>
       </el-table-column>
       <el-table-column label="规格" prop="id"  align="center">
@@ -60,19 +60,34 @@
           <span>{{ row.format }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="费用" prop="id" align="center">
+      <el-table-column label="厂家" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.fee }}</span>
+          <span>{{ row.manufacturer }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="收费类别" prop="id" align="center">
+      <el-table-column label="剂型" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.expense_classification_name }}</span>
+          <span>{{ row.dosage_form }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="科室" prop="id" align="center">
+      <el-table-column label="类型" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.department_name }}</span>
+          <span>{{ row.type_name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="单价" prop="id" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.price }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="拼音码" prop="id" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.pinyin }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="库存" prop="id" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.stock }}</span>
         </template>
       </el-table-column>
 
@@ -89,7 +104,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getPageList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -108,18 +123,25 @@
         <el-form-item label="规格" >
           <el-input v-model="temp.format" />
         </el-form-item>
-        <el-form-item label="费用" >
-          <el-input v-model="temp.fee" />
+        <el-form-item label="包装单位" >
+          <el-input v-model="temp.unit" />
         </el-form-item>
-        <el-form-item label="收费类别" >
-          <el-select v-model="temp.expense_classification_id" class="filter-item" placeholder="Please select">
-            <el-option v-for="item,index in expenseClassifications" :key="index" :label="item.fee_name" :value="item.id" />
+        <el-form-item label="厂家" >
+          <el-input v-model="temp.manufacturer" />
+        </el-form-item>
+        <el-form-item label="剂型" >
+          <el-input v-model="temp.dosage_form" />
+        </el-form-item>
+        <el-form-item label="药品类型" >
+          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+            <el-option v-for="item,index in classes" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="科室" >
-          <el-select v-model="temp.department_name" class="filter-item" placeholder="Please select">
-            <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
-          </el-select>
+        <el-form-item label="单价" >
+          <el-input v-model="temp.price" />
+        </el-form-item>
+        <el-form-item label="库存" >
+          <el-input v-model="temp.stock" />
         </el-form-item>
 
         <!--        <el-form-item label="Status">-->
@@ -158,7 +180,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, add, _delete,_import,update} from '@/api/nondrugs'
+  import {getAll, add, _delete,_import,update,getDrugByPage} from '@/api/drugs'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -201,11 +223,8 @@
       }
     },
     computed:{
-      departments(){
-        return bus.departments
-      },
-      expenseClassifications(){
-        return bus.expenseClassifications
+      classes(){
+        return [{id:101, name:"西药"}, {id:102, name:"中成药"}, {id:103, name:"中草药"}]
       }
     },
     data() {
@@ -230,16 +249,18 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          id: 1,
-          code: "120200001",
-          pinyin: "DQJ",
-          format: "次",
-          name: "大抢救",
-          fee: 100,
-          expense_classification_id: 20,
-          department_id: 1,
-          expense_classification_name: "门诊手术费",
-          department_name: "神经科"
+          id:12,
+          code:"86979474000209",
+          name:"黄连颗粒",
+          format:"0.5g/3g袋",
+          unit:"袋",
+          manufacturer:"江阴天江药业有限公司",
+          dosage_form:115,
+          type:102,
+          type_name:"中成药",
+          price:1.07,
+          pinyin:"HLKL",
+          stock:100
         },
         dialogFormVisible: false,
         dialogStatus: '',
@@ -258,20 +279,29 @@
       }
     },
     created() {
-      this.getList()
+      //this.getList()
+      this.getPageList()
     },
     methods: {
+      getPageList(){
+        this.listLoading = true
+        getDrugByPage(this.listQuery).then(res=>{
+          this.list = res.data
+
+          this.total = this.list.length
+        })
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 600)
+      },
       getList() {
         this.listLoading = true
         getAll().then(response => {
           const {data} = response
-          const {expense_classification,department,non_drug_charge} = data
-          bus.nondrugs = non_drug_charge
-          bus.departments = department
-          bus.expenseClassifications = expense_classification
-          this.list = non_drug_charge
+          bus.drugs = data
+          this.list = data
           this.fullList = this.list
-          this.total = non_drug_charge.length
+          this.total = data.length
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -319,16 +349,17 @@
       },
       resetTemp() {
         this.temp = {
-          id: 1,
-          code: "120200001",
-          pinyin: "DQJ",
-          format: "次",
-          name: "大抢救",
-          fee: 100,
-          expense_classification_id: 20,
-          department_id: 1,
-          expense_classification_name: "门诊手术费",
-          department_name: "神经科"
+          id:12,
+          code:"86979474000209",
+          name:"黄连颗粒",
+          format:"0.5g/3g袋",
+          unit:"袋",
+          manufacturer:"江阴天江药业有限公司",
+          dosage_form:115,
+          type:"中成药",
+          price:1.07,
+          pinyin:"HLKL",
+          stock:100
         }
       },
       handleCreate() {
