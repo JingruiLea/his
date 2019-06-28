@@ -72,7 +72,7 @@
       </el-table-column>
       <el-table-column label="类型" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.type_name }}</span>
+          <span>{{ row.type }}</span>
         </template>
       </el-table-column>
       <el-table-column label="单价" prop="id" align="center">
@@ -180,7 +180,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, add, _delete,_import,update,getDrugByPage} from '@/api/drugs'
+  import {getAll, add, _delete,_import,update,getDrugByPage,getDrugSize} from '@/api/drugs'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -256,8 +256,7 @@
           unit:"袋",
           manufacturer:"江阴天江药业有限公司",
           dosage_form:115,
-          type:102,
-          type_name:"中成药",
+          type:"中成药",
           price:1.07,
           pinyin:"HLKL",
           stock:100
@@ -287,8 +286,9 @@
         this.listLoading = true
         getDrugByPage(this.listQuery).then(res=>{
           this.list = res.data
-
-          this.total = this.list.length
+        })
+        getDrugSize().then(res=>{
+          this.total = res.data
         })
         setTimeout(() => {
           this.listLoading = false

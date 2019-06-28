@@ -36,6 +36,13 @@ export function getDrugByPage(data) {
     data
   })
 }
+export function getDrugSize(data) {
+  return request({
+    url: '/drugInfoManagement/getDrugSize',
+    method: 'post',
+    data
+  })
+}
 export function _import(data) {
   return request({
     url: '/drugInfoManagement/import',
