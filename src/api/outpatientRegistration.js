@@ -29,9 +29,9 @@ export function update(data) {
     data
   })
 }
-export function _import(data) {
+export function withdrawNumber(data) {
   return request({
-    url: '/userManagement/import',
+    url: '/outpatientRegistration/withdrawNumber',
     method: 'post',
     data
   })

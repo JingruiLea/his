@@ -109,29 +109,41 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/medicalRecord',
+    path: '/charge',
+    component: Layout,
+    redirect: '/charge',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/example/charge'),
+        name: 'charge',
+        meta: { title: '收费/退费', icon: 'user', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/registration',
     component: Layout,
     redirect: '/guide/index',
     children: [
       {
         path: 'index',
         component: () => import('@/views/guide/index'),
-        name: '门诊病历首页',
-        meta: { title: '门诊病历首页', icon: 'guide', noCache: true }
+        name: '挂号退号',
+        meta: { title: '挂号退号', icon: 'guide', noCache: true }
       }
     ]
   },
   {
-    path: '/profile',
+    path: '/medicalRecordIndex',
     component: Layout,
-    redirect: '/profile/index',
-    hidden: true,
+    redirect: '/guide/index',
     children: [
       {
         path: 'index',
-        component: () => import('@/views/profile/index'),
-        name: 'Profile',
-        meta: { title: 'Profile', icon: 'user', noCache: true }
+        component: () => import('@/views/example/medical-record-index'),
+        name: '门诊病历首页',
+        meta: { title: '门诊病历首页', icon: 'guide', noCache: true }
       }
     ]
   }
