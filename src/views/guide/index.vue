@@ -1,6 +1,9 @@
 <template>
   <div class="app-container">
     <el-card>
+      <div slot="header" class="clearfix">
+        <span>挂号</span>
+      </div>
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px">
         <el-row :gutter="20">
           <el-col :span="5">
@@ -15,7 +18,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="5">
+          <el-col :span="7">
             <el-form-item label="出生日期" prop="username">
               <el-date-picker
                 editable
@@ -25,13 +28,14 @@
                 value-format="yyyy-MM-dd"
                 @change="computeAge"
                 @blur="computeAge"
+                style="display: inline-block;width:auto;"
               >
               </el-date-picker>
             </el-form-item>
           </el-col>
           <el-col :span="5">
-            <el-form-item label="年龄" prop="username" readonly label-width="auto" style="margin-left: 1em;">
-              <el-input style="max-width: 120px;" v-model="temp.age" />
+            <el-form-item label="年龄" prop="username" style="float: right;z-index: 20;" readonly label-width="3em" >
+              <el-input v-model="temp.age" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -43,7 +47,7 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
+          <el-col :span="6">
             <el-form-item label="医疗证类别" label-width="auto" >
               <el-select v-model="temp.medical_certificate_number_type" style="max-width: 120px;" class="filter-item" placeholder="Please select">
                 <el-option v-for="item,index in [{a:'身份证', b:'id'}, {a:'医保卡', b:'mid'}]" :key="index" :label="item.a" :value="item.b"/>
@@ -124,7 +128,69 @@
       </el-form>
     </el-card>
     <el-card>
+      <div slot="header" class="clearfix">
+        <span>退号</span>
+      </div>
+      <div class="filter-container">
+        <el-input v-model="listQuery.medical_record_id" placeholder="病历号" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+        <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查询
+        </el-button>
+      </div>
 
+      <el-table
+        :key="tableKey"
+        v-loading="listLoading"
+        :data="list"
+        border
+        fit
+        highlight-current-row
+        style="width: 100%;"
+        @sort-change="sortChange"
+      >
+        <el-table-column label="病历号" prop="id" sortable="custom" align="center" width="100">
+          <template slot-scope="{row}">
+            <span>{{ row.medical_record_id }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="姓名" prop="id" sortable="custom" align="center" width="100">
+          <template slot-scope="{row}">
+            <span>{{ row.patient_name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="性别" prop="id" align="center" >
+          <template slot-scope="{row}">
+            <span>{{ row.gender }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="挂号科室" prop="id"  align="center" >
+          <template slot-scope="{row}">
+            <span>{{ row.department_name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="挂号医生" prop="id" align="center" >
+          <template slot-scope="{row}">
+            <span>{{ row.outpatient_doctor_name}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="挂号日期" prop="id" align="center" >
+          <template slot-scope="{row}">
+            <span>{{ row.consultation_date }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" prop="id" align="center" >
+          <template slot-scope="{row}">
+            <span>{{ row.status }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="Actions" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="{row}">
+            <el-button size="mini" type="danger" @click="handleDelete(row)" :disabled="!row.status=='未看诊'">
+              退号
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-card>
   </div>
 </template>
@@ -132,7 +198,8 @@
 <script>
 
   import bus from '@/bus'
-  import {init, syncDoctorList, calculateFee, confirm} from '@/api/outpatientRegistration'
+  import {init, syncDoctorList, calculateFee, confirm, withdrawNumber} from '@/api/outpatientRegistration'
+  import {registrationByRecordId} from '@/api/outpationCharge'
 
   export default {
     name: 'Registration',
@@ -153,6 +220,13 @@
     },
     data() {
       return {
+        listQuery:{
+          medical_record_id: 20000017
+        },
+        tableKey: 0,
+        total: 0,
+        listLoading: false,
+        list:null,
         driver: null,
         temp: {
           address : "沈阳市东北大学",
@@ -246,6 +320,26 @@
       this.getDoctorList()
     },
     methods: {
+      handleFilter(){
+        this.listQuery.medical_record_id = parseInt(this.listQuery.medical_record_id)
+        registrationByRecordId(this.listQuery).then(res=>{
+          if(!this.list){
+            this.list = []
+          }
+          for(let item of this.list){
+            console.log(item,res.data)
+            if(item.medical_record_id == res.data.medical_record_id){
+              return
+            }
+          }
+          this.list.push(res.data)
+        })
+      },
+      handleDelete(row){
+        withdrawNumber({medical_record_id: row.medical_record_id}).then(res=>{
+          row.status = '已退号'
+        })
+      },
       resetTemp(){
         this.temp = {
           address : "",
@@ -306,8 +400,21 @@
             })
           }
         })
+      },
+      sortChange(){
 
       }
     }
   }
 </script>
+
+<style scoped>
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+  }
+  .clearfix:after {
+    clear: both
+  }
+</style>

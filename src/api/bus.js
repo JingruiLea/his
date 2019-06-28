@@ -23,3 +23,11 @@ export function getRegistrationLevel(data) {
     data
   })
 }
+
+export function getUsers(data) {
+  return request({
+    url: '/userManagement/all',
+    method: 'post',
+    data
+  })
+}
