@@ -1,110 +1,87 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
-      </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
-        新增
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
-    </div>
-
-    <el-table
-      :key="tableKey"
-      v-loading="listLoading"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;"
-      @sort-change="sortChange"
-    >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.id }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="编码" prop="id" sortable="custom" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.code }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="包装单位" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.unit }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="规格" prop="id"  align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.format }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="厂家" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.manufacturer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="剂型" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.dosage_form }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="类型" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.type }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="单价" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.price }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="拼音码" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.pinyin }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="库存" prop="id" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.stock }}</span>
-        </template>
-      </el-table-column>
-
-
-      <el-table-column label="Actions" align="center" width="200" class-name="small-padding fixed-width">
-        <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">
-            编辑
-          </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row)">
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getPageList" />
+    <el-row>
+      <el-col :offset="1">
+        <el-date-picker
+          v-model="collectDate"
+          type="daterange"
+          unlink-panels
+          range-separator="-"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="7" :offset="1">
+        <el-table
+          :data="historyList"
+          header-row-class-name="daily-detail-header"
+          style="width: 100%">
+          <el-table-column
+            prop="start_time"
+            label="开始日期"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="end_time"
+            label="结束日期"
+            :formatter="formatter">
+          </el-table-column>
+        </el-table>
+      </el-col>
+      <el-col :span="14" :offset="1">
+        <el-table
+          :data="detailsList"
+          style="width: 100%"
+          :default-sort = "{prop: 'id', order: 'descending'}"
+          header-row-class-name="daily-detail-header"
+        >
+          <el-table-column
+            prop="id"
+            label="收费编号"
+            sortable
+            width="150">
+          </el-table-column>
+          <el-table-column
+            prop="type"
+            label="类型"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="medical_record_id"
+            label="病历号"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="quantity"
+            label="数量"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="should_pay"
+            label="应收"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="truely_pay"
+            label="实收"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="retail_fee"
+            label="找零"
+            :formatter="formatter">
+          </el-table-column>
+          <el-table-column
+            prop="create_time"
+            label="创建日期"
+            :formatter="formatter">
+          </el-table-column>
+        </el-table>
+      </el-col>
+    </el-row>
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -123,38 +100,20 @@
         <el-form-item label="规格" >
           <el-input v-model="temp.format" />
         </el-form-item>
-        <el-form-item label="包装单位" >
-          <el-input v-model="temp.unit" />
+        <el-form-item label="费用" >
+          <el-input v-model="temp.fee" />
         </el-form-item>
-        <el-form-item label="厂家" >
-          <el-input v-model="temp.manufacturer" />
-        </el-form-item>
-        <el-form-item label="剂型" >
-          <el-input v-model="temp.dosage_form" />
-        </el-form-item>
-        <el-form-item label="药品类型" >
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
-            <el-option v-for="item,index in classes" :key="index" :label="item.name" :value="item.id" />
+        <el-form-item label="收费类别" >
+          <el-select v-model="temp.expense_classification_id" class="filter-item" placeholder="Please select">
+            <el-option v-for="item,index in expenseClassifications" :key="index" :label="item.fee_name" :value="item.id" />
           </el-select>
         </el-form-item>
-        <el-form-item label="单价" >
-          <el-input v-model="temp.price" />
-        </el-form-item>
-        <el-form-item label="库存" >
-          <el-input v-model="temp.stock" />
+        <el-form-item label="科室" >
+          <el-select v-model="temp.department_name" class="filter-item" placeholder="Please select">
+            <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
+          </el-select>
         </el-form-item>
 
-        <!--        <el-form-item label="Status">-->
-        <!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-        <!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-        <!--          </el-select>-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Remark">-->
-        <!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-        <!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -180,7 +139,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, add, _delete,_import,update,getDrugByPage,getDrugSize} from '@/api/drugs'
+  import {getAll, add, _delete,_import,update} from '@/api/nondrugs'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -223,12 +182,17 @@
       }
     },
     computed:{
-      classes(){
-        return [{id:101, name:"西药"}, {id:102, name:"中成药"}, {id:103, name:"中草药"}]
+      departments(){
+        return bus.departments
+      },
+      expenseClassifications(){
+        return bus.expenseClassifications
       }
     },
     data() {
       return {
+        pickerOptions:{},
+        collectDate:"",
         tableKey: 0,
         list: null,
         fullList : null,
@@ -249,17 +213,16 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          id:12,
-          code:"86979474000209",
-          name:"黄连颗粒",
-          format:"0.5g/3g袋",
-          unit:"袋",
-          manufacturer:"江阴天江药业有限公司",
-          dosage_form:115,
-          type:"中成药",
-          price:1.07,
-          pinyin:"HLKL",
-          stock:100
+          id: 1,
+          code: "120200001",
+          pinyin: "DQJ",
+          format: "次",
+          name: "大抢救",
+          fee: 100,
+          expense_classification_id: 20,
+          department_id: 1,
+          expense_classification_name: "门诊手术费",
+          department_name: "神经科"
         },
         dialogFormVisible: false,
         dialogStatus: '',
@@ -278,30 +241,23 @@
       }
     },
     created() {
-      //this.getList()
-      this.getPageList()
+      this.getList()
     },
     methods: {
-      getPageList(){
-        this.listLoading = true
-        getDrugByPage(this.listQuery).then(res=>{
-          this.list = res.data
-        })
-        getDrugSize().then(res=>{
-          this.total = res.data
-        })
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 600)
+      formatter(row, column) {
+        return row.address;
       },
       getList() {
         this.listLoading = true
         getAll().then(response => {
           const {data} = response
-          bus.drugs = data
-          this.list = data
+          const {expense_classification,department,non_drug_charge} = data
+          bus.nondrugs = non_drug_charge
+          bus.departments = department
+          bus.expenseClassifications = expense_classification
+          this.list = non_drug_charge
           this.fullList = this.list
-          this.total = data.length
+          this.total = non_drug_charge.length
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -349,17 +305,16 @@
       },
       resetTemp() {
         this.temp = {
-          id:12,
-          code:"86979474000209",
-          name:"黄连颗粒",
-          format:"0.5g/3g袋",
-          unit:"袋",
-          manufacturer:"江阴天江药业有限公司",
-          dosage_form:115,
-          type:"中成药",
-          price:1.07,
-          pinyin:"HLKL",
-          stock:100
+          id: 1,
+          code: "120200001",
+          pinyin: "DQJ",
+          format: "次",
+          name: "大抢救",
+          fee: 100,
+          expense_classification_id: 20,
+          department_id: 1,
+          expense_classification_name: "门诊手术费",
+          department_name: "神经科"
         }
       },
       handleCreate() {
@@ -389,7 +344,7 @@
             type: 'success',
             duration: 2000
           })
-          this.getPageList()
+          this.getList()
         })
         //})
 
@@ -427,6 +382,38 @@
           }
         })
       },
+      handleCreate() {
+        this.resetTemp()
+        this.dialogStatus = 'create'
+        this.dialogFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
+      },
+      createData() {
+        //this.$refs['dataForm'].validate((valid) => {
+        // if (valid) {
+        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
+        //   this.temp.author = 'vue-element-admin'
+        //   createArticle(this.temp).then(() => {
+
+        //   })
+        // }
+        //console.log(`post data${JSON.stringify(this.temp)}`)
+        add(this.temp).then(res=>{
+          this.list.unshift(this.temp)
+          this.dialogFormVisible = false
+          this.$notify({
+            title: 'Success',
+            message: 'Created Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
+        //})
+
+      },
       handleDelete(row) {
         console.log(`line 354: delete ${row}`)
         _delete({data:[row.id]}).then(res =>{
@@ -436,7 +423,7 @@
             type: 'success',
             duration: 2000
           })
-          this.getPageList()
+          this.getList()
         })
       },
       handleFetchPv(pv) {
@@ -471,3 +458,18 @@
     }
   }
 </script>
+
+<style>
+  .daily-detail-header .caret-wrapper{
+    height:22px !important;
+  }
+  .daily-detail-header .ascending{
+    top:0 !important;
+  }
+  .daily-detail-header .descending{
+    bottom:0 !important;
+  }
+  .daily-detail-header .cell{
+    text-align: center;
+  }
+</style>

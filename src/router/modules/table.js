@@ -79,6 +79,12 @@ const tableRouter = {
       meta: { title: '药品目录管理' }
     },
     {
+      path: 'daily-collect',
+      component: () => import('@/views/table/daily-collect'),
+      name: 'daily-collect',
+      meta: { title: '收费员日结' }
+    },
+    {
       path: 'departments2',
       component: () => import('@/views/table/a'),
       name: 'departments2',
