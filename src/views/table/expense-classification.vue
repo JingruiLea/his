@@ -1,106 +1,86 @@
 <template>
   <div class="app-container">
-    <el-row>
-     <el-col :span="8">
-       <el-row class="demo-input-suffix">
-         <el-col :span="16">
-         <el-input
-           placeholder="输入日期以筛选"
-           suffix-icon="el-icon-date"
-           v-model="dateInput">
-         </el-input>
-         </el-col>
-         <el-col :span="8">
-         <el-button class="filter-item" style="margin-left: 10px;float: right;" type="primary" icon="el-icon-edit" @click="handleCreate()">
-           新日结
-         </el-button>
-         </el-col>
-       </el-row>
-        <el-table
-          ref="singleTable"
-          highlight-current-row
-          @row-click="handleCurrentChange"
-          :data="historyList"
-          header-row-class-name="daily-detail-header"
-          style="width: 100%">
-          <el-table-column
-            prop="start_time"
-            label="开始日期">
-          </el-table-column>
-          <el-table-column
-            prop="end_time"
-            label="结束日期">
-          </el-table-column>
-          <el-table-column
-            prop="checked"
-            label="是否核对"
-            size="mini"
-            :filters="[{ text: '未核对', value: false }, { text: '已核对', value: true }]"
-            :filter-method="filterTag"
-            filter-placement="bottom-end">
-            <template slot-scope="scope">
-              <el-tag
-                :type="scope.row.checked ? 'success' : 'danger'"
-                disable-transitions>{{scope.row.checked?'已核对':'未核对'}}</el-tag>
-            </template>
-          </el-table-column>
-        </el-table>
-      </el-col>
-      <el-col :span="14" :offset="1">
-        <el-table
-          :data="detailsList"
-          style="width: 100%"
-          :default-sort = "{prop: 'id', order: 'descending'}"
-          header-row-class-name="daily-detail-header"
-        >
-          <el-table-column
-            prop="id"
-            label="收费编号"
-            sortable
-            width="150">
-          </el-table-column>
-          <el-table-column
-            prop="type"
-            label="类型">
-          </el-table-column>
-          <el-table-column
-            prop="medical_record_id"
-            label="病历号">
-          </el-table-column>
-          <el-table-column
-            prop="should_pay"
-            label="应收">
-          </el-table-column>
-          <el-table-column
-            prop="truely_pay"
-            label="实收">
-          </el-table-column>
-          <el-table-column
-            prop="retail_fee"
-            label="找零">
-          </el-table-column>
-          <el-table-column
-            prop="create_time"
-            label="创建日期">
-          </el-table-column>
-        </el-table>
-      </el-col>
-    </el-row>
+    <div class="filter-container">
+      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
+        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
+      </el-select>
+      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      </el-select>
+      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
+        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
+      </el-select>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        Search
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
+        新增
+      </el-button>
+      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        reviewer
+      </el-checkbox>
+    </div>
 
-    <el-dialog style="text-align: center;" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-date-picker
-        v-model="collectDate.end_time"
-        type="date"
-        @change="changeDate"
-        value-format="yyyy-MM-dd HH:mm:ss"
-        placeholder="选择日结结束日期">
-      </el-date-picker>
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+      @sort-change="sortChange"
+    >
+      <el-table-column label="ID" prop="id" sortable="custom" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.id }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="名称" prop="id" sortable="custom" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.fee_name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="拼音" prop="id" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.pinyin }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="Actions" align="center" width="200" class-name="small-padding fixed-width">
+        <template slot-scope="{row}">
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+            编辑
+          </el-button>
+          <el-button size="mini" type="danger" @click="handleDelete(row)">
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getPageList" />
+
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="ID" type="number">
+          <el-input-number v-model="temp.id" />
+        </el-form-item>
+        <el-form-item label="名称" >
+          <el-input v-model="temp.fee_name" />
+        </el-form-item>
+        <el-form-item label="拼音" >
+          <el-input v-model="temp.pinyin" />
+        </el-form-item>
+
+      </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          取消
+          Cancel
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          确认
+          Confirm
         </el-button>
       </div>
     </el-dialog>
@@ -119,7 +99,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, detail, collect} from '@/api/daily-collect'
+  import {getAll, add, _delete,update} from '@/api/expense-classification'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -164,34 +144,8 @@
     computed:{
 
     },
-    watch:{
-      dateInput(val){
-        this.historyList = this.fullList.filter(ele=>{
-          if(ele.start_time.includes(val) || ele.end_time.includes(val))
-            return true;
-        })
-      }
-    },
     data() {
       return {
-        pickerOptions:{shortcuts: [{
-            text: '最近一天',
-            onClick(picker) {
-              const end = new Date();
-              const start = new Date();
-              start.setTime(start.getTime() - 3600 * 1000 * 24 * 1);
-              picker.$emit('pick', [start, end]);
-            }
-          }]
-        },
-        dateInput:"",
-        currentRow: null,
-        collectDate:{
-          start_time:'',
-          end_time:'2019-06-29 12:00:00'
-        },
-        historyList:null,
-        detailsList:null,
         tableKey: 0,
         list: null,
         fullList : null,
@@ -206,17 +160,21 @@
           name: undefined,
           sort: '+id'
         },
-        temp: {},
         importanceOptions: [1, 2, 3],
         calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
+        temp: {
+          id:1,
+          fee_name:"挂号费",
+          pinyin:"GHF"
+        },
         dialogFormVisible: false,
         dialogStatus: '',
         textMap: {
           update: 'Edit',
-          create: '新日结'
+          create: 'Create'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -229,37 +187,17 @@
       }
     },
     created() {
-      this.getHistoryList()
+      this.getList()
     },
     methods: {
-      filterTag(value, row) {
-        return row.checked === value;
-      },
-      filterHandler(value, row, column) {
-        const property = column['property'];
-        return row[property] === value;
-      },
-      changeDate(){
-        console.log(this.collectDate)
-        let max = '1999-01-01'
-        for(let item of this.fullList){
-          if(max < item.end_time){
-            max = item.end_time
-          }
-        }
-        this.collectDate.start_time = max
-      },
-      formatter(row, column) {
-        return row.address;
-      },
-      getHistoryList() {
+      getList() {
         this.listLoading = true
         getAll().then(response => {
           const {data} = response
-          this.historyList = data
-          this.fullList = data
+          bus.expenseClassifications = data
+          this.list = data
+          this.fullList = this.list
           this.total = data.length
-          this.changeDate()
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -278,17 +216,10 @@
         }
         console.log(this.list)
       },
-      setCurrent(row) {
-        this.$refs.singleTable.setCurrentRow(row);
-      },
-      handleCurrentChange(val) {
-        this.currentRow = val;
-        console.log(val)
-        detail({
-          daily_collect_id: val.id
-        }).then(response=>{
-          const {data} = response
-          this.detailsList = data
+      searchByName(){
+        let name = this.listQuery.name
+        this.list.filter(item=>{
+          return item.name.includes(name)
         })
       },
       handleModifyStatus(row, status) {
@@ -313,6 +244,32 @@
         this.handleFilter()
       },
       resetTemp() {
+        this.temp = {
+          id:1,
+          fee_name:"挂号费",
+          pinyin:"GHF"
+        }
+      },
+      handleCreate() {
+        this.resetTemp()
+        this.dialogStatus = 'create'
+        this.dialogFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
+      },
+      createData() {
+        this.temp.id = parseInt(this.temp.id)
+        add(this.temp).then(res=>{
+          this.dialogFormVisible = false
+          this.$notify({
+            title: 'Success',
+            message: 'Created Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
 
       },
       handleUpdate(row) {
@@ -348,31 +305,9 @@
           }
         })
       },
-      handleCreate() {
-        this.resetTemp()
-        this.dialogStatus = 'create'
-        this.dialogFormVisible = true
-        //this.$nextTick(() => {
-        //  this.$refs['dataForm'].clearValidate()
-        //})
-      },
-      createData() {
-        collect(this.collectDate).then(res=>{
-          this.dialogFormVisible = false
-          this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
-            type: 'success',
-            duration: 2000
-          })
-          this.getHistoryList()
-        })
-        //})
-
-      },
       handleDelete(row) {
         console.log(`line 354: delete ${row}`)
-        _delete({data:[row.id]}).then(res =>{
+        _delete({idArr:[row.id]}).then(res =>{
           this.$notify({
             title: 'Success',
             message: 'Delete Successfully',
@@ -414,18 +349,3 @@
     }
   }
 </script>
-
-<style>
-  .daily-detail-header .caret-wrapper{
-    height:22px !important;
-  }
-  .daily-detail-header .ascending{
-    top:0 !important;
-  }
-  .daily-detail-header .descending{
-    bottom:0 !important;
-  }
-  .daily-detail-header .cell{
-    text-align: center;
-  }
-</style>
