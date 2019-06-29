@@ -1,29 +1,37 @@
 import request from '@/utils/request'
 
-export function getReporter(data) {
+export function getAll(data) {
   return request({
-    url: ' /outpatientDailyReportCheck/getReport',
+    url: '/dailyCheck/list',
     method: 'post',
     data
   })
 }
-export function confirmCheck(data) {
+
+export function detail(data) {
   return request({
-    url: '/outpatientDailyReportCheck/confirmCheck',
+    url: '/dailyCollect/detail',
+    method: 'post',
+    data
+  })
+}
+export function collect(data) {
+  return request({
+    url: '/dailyCollect/collect',
+    method: 'post',
+    data
+  })
+}
+export function update(data) {
+  return request({
+    url: '/dailyCollect/update',
     method: 'post',
     data
   })
 }
 export function init(data) {
   return request({
-    url: '/outpatientDailyReportCheck/init',
-    method: 'post',
-    data
-  })
-}
-export function history(data) {
-  return request({
-    url: '/outpatientDailyReportCheck/history',
+    url: '/dailyCheck/init',
     method: 'post',
     data
   })

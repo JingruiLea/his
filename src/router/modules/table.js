@@ -91,6 +91,12 @@ const tableRouter = {
       meta: { title: '收费员日结' }
     },
     {
+      path: 'daily-check',
+      component: () => import('@/views/table/daily-check'),
+      name: 'daily-check',
+      meta: { title: '日结核对' }
+    },
+    {
       path: 'departments2',
       component: () => import('@/views/table/a'),
       name: 'departments2',

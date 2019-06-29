@@ -112,18 +112,6 @@
         <el-form-item label="自定义助记符" prop="department_id">
           <el-input v-model="temp.custom_pinyin" />
         </el-form-item>
-
-        <!--        <el-form-item label="Status">-->
-        <!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-        <!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-        <!--          </el-select>-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Remark">-->
-        <!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-        <!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -231,21 +219,12 @@
         },
         dialogPvVisible: false,
         pvData: [],
-        rules: {
-          // type: [{ required: true, message: 'type is required', trigger: 'change' }],
-          // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-          // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-        },
+        rules: {},
         downloadLoading: false
       }
     },
     created() {
       this.getDiseaseClassificationsList()
-
-      if(bus.diseaseClassifications.length == 0){
-        //bus.getDiseaseClassifications()
-      }
-
     },
     methods: {
       getDiseaseClassificationsList() {
@@ -345,15 +324,6 @@
         this.getDiseaseList(this.tempClassification.id)
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
         this.temp.id = parseInt(this.temp.id)
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
