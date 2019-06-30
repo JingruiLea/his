@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.classification_name" placeholder="分类" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.type" placeholder="类别" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.id" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.classification_name" placeholder="分类" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.type" placeholder="类别" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
@@ -68,7 +68,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -219,6 +219,16 @@
           this.list = department
           this.fullList = this.list
           this.total = department.length
+          this.listQuery = {
+            page: 1,
+            limit: 20,
+            classification_name: undefined,
+            id: undefined,
+            type: undefined,
+            name: undefined,
+            sort: '+id'
+          }
+          this.handleFilter();
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -226,8 +236,7 @@
           }, 1.5 * 1000)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
+      handleFilter(flag) {
         let name = this.listQuery.name
         let type = this.listQuery.type
         let id = this.listQuery.id
@@ -255,6 +264,15 @@
             return item.classification_name.includes(classification_name)
           })
         }
+        this.total = this.list.length
+        if(flag == 1) {
+          this.listQuery.page = 1
+          this.total = this.list.length
+        }
+        let start = this.listQuery.limit*(this.listQuery.page-1)
+        let end = this.listQuery.limit*this.listQuery.page
+        this.list = this.list.slice(start,end)
+
       },
       searchByName(){
         let name = this.listQuery.name

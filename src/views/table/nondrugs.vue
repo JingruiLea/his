@@ -1,21 +1,21 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.department" placeholder="科室" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.department" placeholder="科室" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
       <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
@@ -86,7 +86,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -118,18 +118,6 @@
             <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
-
-        <!--        <el-form-item label="Status">-->
-        <!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-        <!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-        <!--          </el-select>-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Remark">-->
-        <!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-        <!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -267,11 +255,12 @@
           bus.departments = department
           bus.expenseClassifications = expense_classification
           this.list = non_drug_charge.map(non_drug =>{
-            non_drug.department = department.find(i => i.id ==non_drug.department_id).name
+            non_drug.department = department.find(i => i.id == non_drug.department_id).name
             return non_drug
           })
           this.fullList = this.list
           this.total = non_drug_charge.length
+          this.handleFilter()
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -279,8 +268,7 @@
           }, 1.5 * 1000)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
+      handleFilter(flag) {
         let name = this.listQuery.name
         let id = this.listQuery.id
         let code = this.listQuery.code
@@ -307,6 +295,13 @@
             return item.department.includes(department)
           })
         }
+        if(flag == 1) {
+          this.listQuery.page = 1
+          this.total = this.list.length
+        }
+        let start = this.listQuery.limit * (this.listQuery.page - 1)
+        let end = this.listQuery.limit * this.listQuery.page
+        this.list = this.list.slice(start,end)
       },
       searchByName(){
         let name = this.listQuery.name

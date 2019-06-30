@@ -50,3 +50,10 @@ export function _import(data) {
     data
   })
 }
+export function search(data) {
+  return request({
+    url: '/drugInfoManagement/search',
+    method: 'post',
+    data
+  })
+}

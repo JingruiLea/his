@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.pinyin" placeholder="拼音" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.pinyin" placeholder="拼音" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
@@ -56,7 +56,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getPageList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -200,8 +200,7 @@
           }, 1.5 * 1000)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
+      handleFilter(flag) {
         let name = this.listQuery.name
         let id = this.listQuery.id
         let pinyin = this.listQuery.pinyin
@@ -222,6 +221,13 @@
             return item.pinyin.includes(pinyin)
           })
         }
+        if(flag == 1) {
+          this.listQuery.page = 1
+          this.total = this.list.length
+        }
+        let start = this.listQuery.limit * (this.listQuery.page - 1)
+        let end = this.listQuery.limit * this.listQuery.page
+        this.list = this.list.slice(start,end)
       },
       searchByName(){
         let name = this.listQuery.name
