@@ -17,8 +17,11 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         导入
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
+      <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
+        删除
+      </el-button>
+      <el-checkbox v-model="canMultiDelete" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        批量删除
       </el-checkbox>
     </div>
 
@@ -31,7 +34,13 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column
+        v-if="canMultiDelete"
+        type="selection"
+      >
+      </el-table-column>
       <el-table-column label="ID" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -94,7 +103,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row)">
+          <el-button size="mini" v-if="!canMultiDelete" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -229,6 +238,8 @@
           sort: '+id',
           idToShow:null
         },
+        canMultiDelete: false,
+        multiSelection:[],
         importanceOptions: [1, 2, 3],
         calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -267,6 +278,23 @@
       this.getPageList()
     },
     methods: {
+      multiDelete(){
+        let data = this.multiSelection.map(item=>{
+          return item.id
+        })
+        _delete({data:data}).then(res =>{
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getPageList()
+        })
+      },
+      handleSelectionChange(val){
+        this.multiSelection = val
+      },
       getPageList(){
         this.listLoading = true
         getDrugByPage(this.listQuery).then(res=>{
@@ -357,15 +385,6 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
         this.temp.id = parseInt(this.temp.id)
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
@@ -377,7 +396,6 @@
           })
           this.getPageList()
         })
-        //})
 
       },
       handleUpdate(row) {
@@ -409,6 +427,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getPageList()
             })
           }
         })

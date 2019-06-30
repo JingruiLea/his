@@ -6,16 +6,19 @@
       <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-input v-model="listQuery.custom_name" placeholder="自定义名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
-        Search
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
+      <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
+        删除
+      </el-button>
+      <el-checkbox v-model="canMultiDelete" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        批量删除
       </el-checkbox>
     </div>
 
@@ -32,7 +35,13 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column
+        v-if="canMultiDelete"
+        type="selection"
+      >
+      </el-table-column>
       <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -75,7 +84,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row)">
+          <el-button size="mini" v-if="!canMultiDelete" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -96,7 +105,7 @@
           <el-input v-model="temp.pinyin" />
         </el-form-item>
         <el-form-item label="分类" prop="username">
-          <el-select v-model="temp.classification_id" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.classification_id" filterable class="filter-item" placeholder="Please select">
             <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -181,6 +190,8 @@
         fullList : null,
         total: 0,
         listLoading: true,
+        canMultiDelete: false,
+        multiSelection:[],
         listQuery: {
           page: 1,
           limit: 20,
@@ -221,6 +232,23 @@
       this.getDiseaseClassificationsList()
     },
     methods: {
+      multiDelete(){
+        let data = this.multiSelection.map(item=>{
+          return item.id
+        })
+        _delete({data:data}).then(res =>{
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getDiseaseList(this.tempClassification.id)
+        })
+      },
+      handleSelectionChange(val){
+        this.multiSelection = val
+      },
       getDiseaseClassificationsList() {
         this.listLoading = true
         getAll().then(response => {
@@ -361,7 +389,7 @@
             type: 'success',
             duration: 2000
           })
-          this.getList()
+          this.getDiseaseList(this.tempClassification.id)
         })
         //})
 
@@ -395,6 +423,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getDiseaseList(this.tempClassification.id)
             })
           }
         })
@@ -410,7 +439,7 @@
           })
           const index = this.list.indexOf(row)
           this.list.splice(index, 1)
-          this.getList()
+          this.getDiseaseList(this.tempClassification.id)
         })
       },
       handleFetchPv(pv) {

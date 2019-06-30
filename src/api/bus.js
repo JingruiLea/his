@@ -31,3 +31,12 @@ export function getUsers(data) {
     data
   })
 }
+
+export function getDiseaseClassifications(data) {
+  return request({
+    url: '/diagnoseDirectoryManagement/allClassification',
+    method: 'post',
+    data
+  })
+}
+

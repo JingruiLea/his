@@ -13,8 +13,11 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
         新增
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
+      <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
+        删除
+      </el-button>
+      <el-checkbox v-model="canMultiDelete" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        批量删除
       </el-checkbox>
     </div>
 
@@ -27,7 +30,13 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column
+        v-if="canMultiDelete"
+        type="selection"
+      >
+      </el-table-column>
       <el-table-column label="ID" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
@@ -49,7 +58,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row)">
+          <el-button size="mini" v-if="!canMultiDelete" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -155,6 +164,8 @@
           name: undefined,
           sort: '+id'
         },
+        canMultiDelete: false,
+        multiSelection:[],
         importanceOptions: [1, 2, 3],
         calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
@@ -185,6 +196,23 @@
       this.getList()
     },
     methods: {
+      multiDelete(){
+        let data = this.multiSelection.map(item=>{
+          return item.id
+        })
+        _delete({idArr:data}).then(res =>{
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
+      },
+      handleSelectionChange(val){
+        this.multiSelection = val
+      },
       getList() {
         this.listLoading = true
         getAll().then(response => {
@@ -193,6 +221,15 @@
           this.list = data
           this.fullList = this.list
           this.total = data.length
+          this.listQuery = {
+            page: 1,
+            limit: 20,
+            id: undefined,
+            pinyin: undefined,
+            name: undefined,
+            sort: '+id'
+          },
+          this.handleFilter();
 
           // Just to simulate the time of the request
           setTimeout(() => {

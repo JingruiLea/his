@@ -14,8 +14,11 @@
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         导入
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
+      <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
+        删除
+      </el-button>
+      <el-checkbox v-model="canMultiDelete" class="filter-item" style="margin-left:15px;" >
+        批量删除
       </el-checkbox>
     </div>
 
@@ -28,8 +31,14 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @selection-change="handleSelectionChange"
     >
-      <el-table-column label="ID" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column
+        v-if="canMultiDelete"
+        type="selection"
+        >
+      </el-table-column>
+      <el-table-column label="ID" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.uid }}</span>
         </template>
@@ -39,27 +48,27 @@
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓名" prop="id" align="center">
+      <el-table-column label="姓名" prop="id" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.real_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" prop="id"  align="center">
+      <el-table-column label="角色" prop="id"  align="center" >
         <template slot-scope="{row}">
           <span>{{ row.role_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否排班" prop="id" align="center">
+      <el-table-column label="是否排班" prop="id" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.participate_in_scheduling ? '是' : '否' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="职位" prop="id" align="center">
+      <el-table-column label="职位" prop="id" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.title }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="科室" prop="id" align="center">
+      <el-table-column label="科室" prop="id" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.department }}</span>
         </template>
@@ -70,7 +79,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="row.status!='published'" size="mini" type="danger" @click="handleDelete(row)">
+          <el-button v-if="!canMultiDelete" size="mini" type="danger" @click="handleDelete">
             删除
           </el-button>
         </template>
@@ -175,6 +184,7 @@
     },
     data() {
       return {
+        multiSelection:[],
         tableKey: 0,
         list: null,
         fullList : null,
@@ -193,7 +203,7 @@
         calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
-        showReviewer: false,
+        canMultiDelete: false,
         temp: {
           username: "admin2",
           password: "12345",
@@ -225,6 +235,23 @@
       this.getList()
     },
     methods: {
+      handleMultiDel(){
+
+      },
+      multiDelete(){
+        let data = this.multiSelection.map(item=>{
+          return item.uid
+        })
+        _delete({data:data}).then(res =>{
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getList()
+        })
+      },
       getList() {
         this.listLoading = true
         all().then(response => {
@@ -303,6 +330,9 @@
           type: 'success'
         })
         row.status = status
+      },
+      handleSelectionChange(val){
+        this.multiSelection = val
       },
       sortChange(data) {
         const { prop, order } = data
@@ -389,7 +419,8 @@
         })
       },
       handleDelete(row) {
-        _delete({data:[row.uid]}).then(res =>{
+        console.log(`line 354: delete ${row}`)
+        _delete([row.uid]).then(res =>{
           this.$notify({
             title: 'Success',
             message: 'Delete Successfully',
