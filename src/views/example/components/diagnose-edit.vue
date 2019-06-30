@@ -3,9 +3,9 @@
   <el-row>
     <div v-if="!creatingTemplate && !template">
       <el-button type="danger" size="mini" @click="reset" :disabled="hasSubmit">清空</el-button>
-      <el-button type="primary" size="mini" @click="saveAsTemplate">生成模板</el-button>
-      <el-button type="primary" size="mini" @click="tempSave">暂存</el-button>
-      <el-button type="success" size="mini" @click="next">提交</el-button>
+      <el-button type="primary" size="mini" @click="saveAsTemplate" >生成模板</el-button>
+      <el-button type="primary" size="mini" @click="tempSave" :disabled="hasSubmit">暂存</el-button>
+      <el-button type="success" size="mini" @click="next" :disabled="hasSubmit">提交</el-button>
     </div>
     <div v-if="template">
       <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -46,7 +46,7 @@
         prop="disease_name"
       >
         <template slot-scope="{row}">
-          <el-tooltip effect="dark" :content="row.disease_name" placement="top-start">
+          <el-tooltip effect="dark" popper-class="popper-class" :content="row.disease_name" placement="top-start">
             <span>{{row.disease_name}}</span>
           </el-tooltip>
         </template>
@@ -55,19 +55,19 @@
         prop="main_symptom"
       >
         <template slot-scope="{row}">
-          <el-radio v-model="row.main_symptom" @change="checkMainSymptom(row)" :label="true">主诊</el-radio>
+          <el-radio v-model="row.main_symptom" :disabled="hasSubmit && !creatingTemplate" @change="checkMainSymptom(row)" :label="true">主诊</el-radio>
         </template>
       </el-table-column>
       <el-table-column prop="suspect">
         <template slot-scope="{row}">
-          <el-checkbox v-model="row.suspect">疑似</el-checkbox>
+          <el-checkbox v-model="row.suspect" :disabled="hasSubmit && !creatingTemplate">疑似</el-checkbox>
         </template>
       </el-table-column>
       <el-table-column
         prop="Actions"
       >
         <template slot-scope="{row}">
-          <el-button type="danger" @click="removeDiagnose(row)">移除</el-button>
+          <el-button type="danger" :disabled="hasSubmit && !creatingTemplate " @click="removeDiagnose(row)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -115,7 +115,7 @@
 </template>
 
 <script>
-  import {create as createTemplate, update as updateTemplate} from '@/api/diagnoseTemplate'
+  import {create as createTemplate, update as updateTemplate, _delete as deleteTemplate} from '@/api/diagnoseTemplate'
 
   export default {
     name:'DiagnoseEdit',
@@ -123,6 +123,7 @@
     data(){
       return {
         creatingTemplate: false,
+        savedDiagnose: {}
       }
     },
     methods:{
@@ -161,15 +162,18 @@
       },
       saveAsTemplate(){
         this.creatingTemplate = true
+        if(this.hasSubmit){
+          this.savedDiagnose = JSON.parse(JSON.stringify(this.diagnose))
+        }
       },
       tempSave(){
-        this.emit('暂存')
+        this.$emit('tempSave',JSON.parse(JSON.stringify(this.diagnose)))
       },
       next(){
-        this.$emit('next')
+        this.$emit('next',JSON.parse(JSON.stringify(this.diagnose)))
       },
       back(){
-        this.template = false
+        this.$emit('back')
       },
       submitTemplate(){
         createTemplate(this.diagnose).then(res=>{
@@ -179,17 +183,57 @@
             type: 'success',
             duration: 2000
           })
+          if(this.hasSubmit){
+            this.$emit('update:diagnose', JSON.parse(JSON.stringify(this.savedDiagnose)))
+          }
           this.creatingTemplate = false
           this.$emit('fresh')
         })
       },
       backFromCreatingTemplate(){
+        if(this.hasSubmit){
+          this.$emit('update:diagnose', JSON.parse(JSON.stringify(this.savedDiagnose)))
+        }
         this.creatingTemplate = false
       },
+      applyTemplate(){
+        this.$emit('apply')
+        this.$notify({
+          title: 'Success',
+          message: '应用模板成功!',
+          type: 'success',
+          duration: 2000
+        })
+        this.$emit('back')
+      },
+      updateTemplate(){
+        updateTemplate(this.diagnose).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '更新模板成功!',
+            type: 'success',
+            duration: 2000
+          })
+          this.$emit('fresh')
+        })
+      },
+      deleteTemplate(){
+        deleteTemplate({idArr:[this.diagnose.id]}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '删除模板成功!',
+            type: 'success',
+            duration: 2000
+          })
+          this.$emit('fresh')
+          this.$emit('back')
+        })
+      }
     },
     render() {
       console.log('aaa')
-    }
+    },
+
   }
 </script>
 
@@ -199,7 +243,7 @@
     overflow-y: hidden;
   }
   .popper-class{
-    width: 3em;
-    max-width: 3em;
+    width: 6em;
+    max-width: 6em;
   }
 </style>
