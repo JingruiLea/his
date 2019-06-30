@@ -26,7 +26,7 @@
     <el-main>
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
-        <el-tab-pane label="初步诊断" :disabled="medicalRecord.status != '已提交'" name="1"></el-tab-pane>
+        <el-tab-pane label="初步诊断" name="1"></el-tab-pane>
         <el-tab-pane label="检查检验" :disabled="medicalRecord.status != '已提交'" name="2"></el-tab-pane>
         <el-tab-pane label="处方开立" :disabled="medicalRecord.status != '已提交'" name="3"></el-tab-pane>
         <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="4"></el-tab-pane>
@@ -34,8 +34,11 @@
       <div>
         <el-row>
           <el-col v-if="preview" :span="11">
-            <medical-record-previewer :medical-record.sync="medicalRecordPreview" :template="previewIsTemplate"
-                                      @apply="applyPreview" @back="preview = false"/>
+            <medical-record-previewer
+              :medical-record.sync="medicalRecordPreview"
+              :template="previewIsTemplate"
+              @apply="applyPreview"
+              @back="preview = false"/>
           </el-col>
           <el-col v-else :span="11">
             <el-row @mouseenter.native="onTreeHover(0)">
@@ -132,14 +135,19 @@
                 </el-table>
               </el-col>
             </el-row>
+            <el-row v-if="activeIndex=='2'">
+              <exam-table
+                :template-height="templateHeight"
+              ></exam-table>
+            </el-row>
           </el-col>
           <el-col :span="12" :offset="1">
             <el-row v-if="activeIndex=='0'">
               <div v-if="!creatingTemplate">
                 <el-button type="danger" size="mini" @click="resetMedicalRecord" :disabled="hasSubmit">清空</el-button>
                 <el-button type="primary" size="mini" @click="saveMedicalRecordTemplate">生成模板</el-button>
-                <el-button type="primary" size="mini" @click="tempSave">暂存</el-button>
-                <el-button type="success" size="mini" @click="next">提交</el-button>
+                <el-button type="primary" size="mini" @click="tempSave" :disabled="hasSubmit">暂存</el-button>
+                <el-button type="success" size="mini" @click="next" :disabled="hasSubmit">提交</el-button>
               </div>
               <div v-else>
                 <el-button type="success" size="mini" @click="saveMedicalRecordTemplate">提交模板</el-button>
@@ -149,7 +157,7 @@
                        :model="medicalRecord">
                 <div v-if="creatingTemplate">
                   <el-form-item label="模板类型" prop="title">
-                    <el-select v-model="medicalRecord.type" placeholder="type" clearable style="width: 70px"
+                    <el-select v-model="medicalRecord.type" placeholder="type"
                                class="filter-item">
                       <el-option v-for="item,index in [['个人',0],['科室',1],['全院',2]]" :key="index" :label="item[0]"
                                  :value="item[1]"/>
@@ -185,8 +193,13 @@
           </el-col>
           <el-col v-if="activeIndex == '1'" :span="12" :offset="1">
             <diagnose-edit
+              @tempSave="onDiagnoseTempSave"
+              @next="onDiagnoseNext"
+              @apply="applyDiagnoseTemplate"
+              @back="isDiagnoseTemplate = false"
               :template.sync="isDiagnoseTemplate"
               :diagnose="isDiagnoseTemplate? diagnoseTemplate : diagnose"
+              @update:diagnose="(e)=>{diagnose = e}"
               :has-submit="hasSubmit"
               @fresh="getDiagnoseTemplateList"
               @reset="resetDiagnose"
@@ -216,11 +229,14 @@
   import MedicalRecordPreviewer from "./medical-record-previewer";
   import {getDisease} from '../../../src/api/disease-directorys'
   import DiagnoseEdit from "./components/diagnose-edit";
+  import {update as updateDiagnose} from '@/api/diagnose'
+  import ExamTable from "./components/ExamTable";
+
 
   //TODO 分多页
   export default {
     name: 'medicalRecordIndex',
-    components: {DiagnoseEdit, MedicalRecordPreviewer},
+    components: {ExamTable, DiagnoseEdit, MedicalRecordPreviewer},
     data() {
       return {
         diagnose: {
@@ -297,7 +313,7 @@
           current_medical_history: [{required: true, message: '请填写', trigger: 'change'}],
           current_treatment_situation: [{required: true, message: '请填写', trigger: 'change'}]
         },
-        activeIndex: '1',
+        activeIndex: '2',
         tableRowClassName: "table-row",
         patients: [],
         medicalRecord: {
@@ -315,8 +331,14 @@
         historyMedicalRecord: [],
         registrationInfo: {},
         diseases: [],
-        diagnoseTemplate: {},
-        isDiagnoseTemplate: false
+        diagnoseTemplate: {
+          western_diagnose: [],
+          chinese_diagnose: [],
+          title: '诊断模板',
+          type: 0
+        },
+        isDiagnoseTemplate: false,
+        savedMedicalRecord:{}
       }
     },
     computed: {
@@ -345,6 +367,37 @@
       }
     },
     methods: {
+      onDiagnoseTempSave(diagnose){
+        console.log(this.medicalRecord)
+        updateDiagnose({medical_record_id:this.medicalRecord.id, diagnose:diagnose}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '暂存成功!',
+            type: 'success',
+            duration: 2000
+          })
+        })
+      },
+      applyDiagnoseTemplate(){
+        this.diagnoseTemplate.western_diagnose.forEach(ele=>{
+          this.diagnose.western_diagnose.push(ele)
+        })
+        this.diagnoseTemplate.chinese_diagnose.forEach(ele=>{
+          this.diagnose.chinese_diagnose.push(ele)
+        })
+      },
+      onDiagnoseNext(diagnose){
+        console.log(this.medicalRecord)
+        updateDiagnose({medical_record_id:this.medicalRecord.id, diagnose:diagnose}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '提交成功!',
+            type: 'success',
+            duration: 2000
+          })
+        })
+        this.activeIndex = '2'
+      },
       resetDiagnose(){
         this.diagnose = {
           western_diagnose: [],
@@ -361,7 +414,7 @@
           && !this.diagnose.chinese_diagnose.find(ele => ele.disease_id == id)
         ) {
           if(classification_name == '中医疾病'){
-            this.diagnose.chinese_diagnose.push({
+            this.diagnose.chinese_diagnose.unshift({
               disease_name: name,
               disease_code: code,
               disease_id: id,
@@ -369,7 +422,7 @@
               suspect: true
             })
           }else{
-            this.diagnose.western_diagnose.push({
+            this.diagnose.western_diagnose.unshift({
               disease_name: name,
               disease_code: code,
               disease_id: id,
@@ -409,6 +462,7 @@
         })
       },
       applyPreview() {
+        this.medicalRecordPreview.id = this.medicalRecord.id
         this.medicalRecord = Object.assign({}, this.medicalRecordPreview)
         this.$notify({
           title: 'Success',
@@ -422,7 +476,8 @@
         this.preview = true
         this.previewIsTemplate = false
         this.medicalRecordPreview = row.medicalRecord
-        this.$refs['medicalRecordForm'].clearValidate()
+        if(this.$refs['medicalRecordForm'])
+          this.$refs['medicalRecordForm'].clearValidate()
       },
       filterNode(value, data) {
         if (!value) return true;
@@ -431,6 +486,7 @@
       backFromCreatingTemplate() {
         this.creatingTemplate = false
         if (this.medicalRecord.status == '已提交') {
+          this.medicalRecord = JSON.parse(JSON.stringify(this.savedMedicalRecord))
           this.hasSubmit = true
         } else {
           this.hasSubmit = false
@@ -439,8 +495,10 @@
       saveMedicalRecordTemplate() {
         if (!this.creatingTemplate) {
           this.creatingTemplate = true
+          if(this.hasSubmit){
+            this.savedMedicalRecord = JSON.parse(JSON.stringify(this.medicalRecord))
+          }
           this.hasSubmit = false
-          this.medicalRecord.status = '已提交'
           return
         }
         createMedicalRecordTemplate(this.medicalRecord).then(res => {
@@ -452,6 +510,7 @@
           })
           if (this.medicalRecord.status == '已提交') {
             this.hasSubmit = true
+            this.medicalRecord = JSON.parse(JSON.stringify(this.savedMedicalRecord))
           } else {
             this.hasSubmit = false
           }
@@ -485,10 +544,11 @@
             this.hasSubmit = false
           }
           this.getList()
+          this.diagnose = this.medicalRecord.diagnose
           this.$nextTick(() => {
-            this.$refs['medicalRecordForm'].clearValidate()
+            if(this.$refs['medicalRecordForm'])
+              this.$refs['medicalRecordForm'].clearValidate()
           })
-          //let index = this.patients.findIndex(item=>item.medical_record_id==row.medical_record_id)
 
         })
         this.getAllHistoryMedicalRecord(row)
@@ -504,6 +564,11 @@
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
+            if (this.medicalRecord.status == '已提交') {
+              this.hasSubmit = true
+            } else {
+              this.hasSubmit = false
+            }
             break
           }
           case '1': {
@@ -511,6 +576,7 @@
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
+
             break
           }
           case '2': {
@@ -547,7 +613,7 @@
         getPatientList().then(res => {
           this.patients = res.data.waiting
           for (const i of res.data.pending) {
-            this.patients.push(i)
+            this.patients.unshift(i)
           }
         })
       },

@@ -16,6 +16,14 @@ export function getChargeItems(data) {
   })
 }
 
+export function update(data) {
+  return request({
+    url: '/medicalRecord/updateDiagnose',
+    method: 'post',
+    data
+  })
+}
+
 export function getHistoryChargeItems(data) {
   return request({
     url: '/outpatientCharge/getHistoryChargeItems',
@@ -24,13 +32,7 @@ export function getHistoryChargeItems(data) {
   })
 }
 
-export function charge(data) {
-  return request({
-    url: '/outpatientCharge/charge',
-    method: 'post',
-    data
-  })
-}
+
 
 export function withdraw(data) {
   return request({
