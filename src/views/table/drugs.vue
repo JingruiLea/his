@@ -1,14 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.type" placeholder="类型" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.idToShow" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.type" placeholder="类型" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
@@ -222,11 +222,12 @@
         listQuery: {
           page: 1,
           limit: 20,
-          id: undefined,
-          code: undefined,
-          type: undefined,
-          name: undefined,
-          sort: '+id'
+          id: null,
+          code: '',
+          type: '',
+          name: '',
+          sort: '+id',
+          idToShow:null
         },
         importanceOptions: [1, 2, 3],
         calendarTypeOptions,
@@ -292,34 +293,18 @@
           }, 1.5 * 1000)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
-        let name = this.listQuery.name
-        let id = this.listQuery.id
-        let code = this.listQuery.code
-        let type = this.listQuery.type
-        if(id){
-          this.list = this.fullList.filter(item=>{
-            return item.id == id
-          })
-        }else{
-          this.list = this.fullList
-        }
-        if(code){
-          this.list = this.list.filter(item=>{
-            return item.code.includes(code)
-          })
-        }
-        if(name){
-          this.list = this.list.filter(item=>{
-            return item.name.includes(name)
-          })
-        }
-        if(type){
-          this.list = this.list.filter(item=>{
-            return item.type.includes(type)
-          })
-        }
+      handleFilter(flag) {
+        this.listQuery.id = parseInt(this.listQuery.idToShow)
+        search(this.listQuery).then(res=>{
+          if(flag == 1) {
+            this.listQuery.page = 1
+          }
+          const {data} = res
+          const {list,total} = data
+          this.list = list
+          this.total = total
+          console.log(this.list)
+        })
       },
       searchByName(){
         let name = this.listQuery.name
