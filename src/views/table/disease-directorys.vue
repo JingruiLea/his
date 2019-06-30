@@ -1,16 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.id" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.code" placeholder="国际标准码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.custom_name" placeholder="自定义名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
@@ -190,9 +184,9 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
+          custom_name: undefined,
+          code: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -232,12 +226,10 @@
         getAll().then(response => {
           const {data} = response
           bus.diseaseClassifications = data
-          console.log(data)
           this.list = data
           this.fullList = this.list
           this.total = data.length
           this.tempClassification = {id:1,name:'阿米巴病'}
-          console.log(this.tempClassification)
           this.getDiseaseList(this.tempClassification.id)
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -264,13 +256,32 @@
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
-        console.log(name)
-        if(name){
+        let id = this.listQuery.id
+        let code = this.listQuery.code
+        let custom_name = this.listQuery.custom_name
+        if(id){
           this.list = this.fullList.filter(item=>{
-            return item.username.includes(name)
+            return item.id==id
+          })
+        }else{
+          this.list = this.fullList
+        }
+        if(code){
+          this.list = this.list.filter(item=>{
+            return item.code.includes(code)
           })
         }
-        console.log(this.list)
+        if(name) {
+          this.list = this.list.filter(item => {
+            return item.name.includes(name)
+          })
+        }
+        if(custom_name){
+          this.list = this.list.filter(item=>{
+            if(item.custom_name)
+              return item.custom_name.includes(custom_name)
+          })
+        }
       },
       searchByName(){
         let name = this.listQuery.name

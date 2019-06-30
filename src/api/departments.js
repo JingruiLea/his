@@ -24,14 +24,14 @@ export function _delete(data) {
 }
 export function update(data) {
   return request({
-    url: '/userManagement/update',
+    url: '/departmentManage/update',
     method: 'post',
     data
   })
 }
 export function _import(data) {
   return request({
-    url: '/userManagement/import',
+    url: '/departmentManage/import',
     method: 'post',
     data
   })

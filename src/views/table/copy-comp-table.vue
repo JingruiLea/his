@@ -1,24 +1,18 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="登录名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.real_name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.department" placeholder="部门" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
       <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
@@ -40,32 +34,32 @@
           <span>{{ row.uid }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="登录名" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="登录名" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓名" prop="id" align="center" width="80">
+      <el-table-column label="姓名" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.real_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" prop="id"  align="center" width="80">
+      <el-table-column label="角色" prop="id"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.role_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否排班" prop="id" align="center" width="80">
+      <el-table-column label="是否排班" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.participate_in_scheduling ? '是' : '否' }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="职位" prop="id" align="center" width="80">
+      <el-table-column label="职位" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.title }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="科室" prop="id" align="center" width="80">
+      <el-table-column label="科室" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.department }}</span>
         </template>
@@ -76,7 +70,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="row.status!='published'" size="mini" type="danger" @click="handleDelete">
+          <el-button v-if="row.status!='published'" size="mini" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -109,18 +103,6 @@
         <el-form-item label="职位" prop="timestamp">
           <el-input v-model="temp.title" />
         </el-form-item>
-
-<!--        <el-form-item label="Status">-->
-<!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-<!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-<!--          </el-select>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="Imp">-->
-<!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="Remark">-->
-<!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-<!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -146,7 +128,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {all, _delete, add} from '@/api/userMana'
+  import {all, _delete, add,update,_import} from '@/api/userMana'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -201,9 +183,9 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
+          real_name: undefined,
+          department: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -267,7 +249,9 @@
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
-        console.log(name)
+        let real_name = this.listQuery.real_name
+        let id = this.listQuery.id
+        let department = this.listQuery.department
         if(name){
           this.list = this.fullList.filter(item=>{
             return item.username.includes(name)
@@ -275,7 +259,21 @@
         }else{
           this.list = this.fullList
         }
-        console.log(this.list)
+        if(real_name){
+          this.list = this.list.filter(item=>{
+            return item.real_name.includes(real_name)
+          })
+        }
+        if(id){
+          this.list = this.list.filter(item=>{
+            return item.uid == id
+          })
+        }
+        if(department){
+          this.list = this.list.filter(item=>{
+            return item.department.includes(department)
+          })
+        }
       },
       searchByName(){
         let name = this.listQuery.name
@@ -326,15 +324,6 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-          // if (valid) {
-          //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          //   this.temp.author = 'vue-element-admin'
-          //   createArticle(this.temp).then(() => {
-
-          //   })
-          // }
-          //console.log(`post data${JSON.stringify(this.temp)}`)
           add(this.temp).then(res=>{
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
@@ -363,7 +352,7 @@
           if (valid) {
             const tempData = Object.assign({}, this.temp)
             tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            updateArticle(tempData).then(() => {
+            update(tempData).then(() => {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
@@ -378,21 +367,23 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getList()
             })
           }
         })
       },
       handleDelete(row) {
-        console.log(`line 354: delete ${row}`)
-        _delete(row.uid).then(res =>{
+        _delete({data:[row.uid]}).then(res =>{
           this.$notify({
             title: 'Success',
             message: 'Delete Successfully',
             type: 'success',
             duration: 2000
           })
+          const index = this.list.indexOf(row)
+          this.list.splice(index, 1)
+          this.getList()
         })
-        this.getList()
       },
       handleFetchPv(pv) {
         fetchPv(pv).then(response => {
