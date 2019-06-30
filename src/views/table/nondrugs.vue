@@ -1,13 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.department" placeholder="科室" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -218,9 +215,9 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
+          code: undefined,
+          department: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -269,7 +266,10 @@
           bus.nondrugs = non_drug_charge
           bus.departments = department
           bus.expenseClassifications = expense_classification
-          this.list = non_drug_charge
+          this.list = non_drug_charge.map(non_drug =>{
+            non_drug.department = department.find(i => i.id ==non_drug.department_id).name
+            return non_drug
+          })
           this.fullList = this.list
           this.total = non_drug_charge.length
 
@@ -282,13 +282,31 @@
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
-        console.log(name)
-        if(name){
+        let id = this.listQuery.id
+        let code = this.listQuery.code
+        let department = this.listQuery.department
+        if(id){
           this.list = this.fullList.filter(item=>{
+            return item.id == id
+          })
+        }else{
+          this.list = this.fullList
+        }
+        if(code){
+          this.list = this.list.filter(item=>{
+            return item.code.includes(code)
+          })
+        }
+        if(name){
+          this.list = this.list.filter(item=>{
             return item.name.includes(name)
           })
         }
-        console.log(this.list)
+        if(department){
+          this.list = this.list.filter(item=>{
+            return item.department.includes(department)
+          })
+        }
       },
       searchByName(){
         let name = this.listQuery.name

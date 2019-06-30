@@ -1,13 +1,10 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.code" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.type" placeholder="类型" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
@@ -225,8 +222,8 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
+          id: undefined,
+          code: undefined,
           type: undefined,
           name: undefined,
           sort: '+id'
@@ -266,7 +263,6 @@
       }
     },
     created() {
-      //this.getList()
       this.getPageList()
     },
     methods: {
@@ -287,8 +283,7 @@
         getAll().then(response => {
           const {data} = response
           bus.drugs = data
-          this.list = data
-          this.fullList = this.list
+          this.fullList = data
           this.total = data.length
 
           // Just to simulate the time of the request
@@ -300,13 +295,31 @@
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
-        console.log(name)
-        if(name){
+        let id = this.listQuery.id
+        let code = this.listQuery.code
+        let type = this.listQuery.type
+        if(id){
           this.list = this.fullList.filter(item=>{
+            return item.id == id
+          })
+        }else{
+          this.list = this.fullList
+        }
+        if(code){
+          this.list = this.list.filter(item=>{
+            return item.code.includes(code)
+          })
+        }
+        if(name){
+          this.list = this.list.filter(item=>{
             return item.name.includes(name)
           })
         }
-        console.log(this.list)
+        if(type){
+          this.list = this.list.filter(item=>{
+            return item.type.includes(type)
+          })
+        }
       },
       searchByName(){
         let name = this.listQuery.name

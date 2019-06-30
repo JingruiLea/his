@@ -38,32 +38,32 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="国际标准码" prop="id" align="center" width="80">
+      <el-table-column label="国际标准码" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="名称" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="拼音" prop="id" align="center" width="80">
+      <el-table-column label="拼音" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.pinyin }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="分类" prop="id"  align="center" width="80">
+      <el-table-column label="分类" prop="id"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.classification_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="自定义名称" prop="id" align="center" width="80">
+      <el-table-column label="自定义名称" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.custom_name}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="自定义助记符" prop="id" align="center" width="80">
+      <el-table-column label="自定义助记符" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.custom_pinyin}}</span>
         </template>

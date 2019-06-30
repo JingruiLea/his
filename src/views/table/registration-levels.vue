@@ -1,24 +1,19 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
+      <el-input v-model="listQuery.id" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate()">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
       <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
@@ -40,22 +35,22 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="名称" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否默认" prop="id" align="center" width="80">
+      <el-table-column label="是否默认" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.is_default }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="显示顺序号" prop="id"  align="center" width="80">
+      <el-table-column label="显示顺序号" prop="id"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.seq_num }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="费用" prop="id" align="center" width="80">
+      <el-table-column label="费用" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.fee }}</span>
         </template>
@@ -73,8 +68,6 @@
         </template>
       </el-table-column>
     </el-table>
-
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -95,18 +88,6 @@
         <el-form-item label="费用" >
           <el-input v-model="temp.fee" />
         </el-form-item>
-
-        <!--        <el-form-item label="Status">-->
-        <!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-        <!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-        <!--          </el-select>-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Remark">-->
-        <!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-        <!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -191,9 +172,7 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -247,9 +226,16 @@
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
-        console.log(name)
-        if(name){
+        let id = this.listQuery.id
+        if(id){
           this.list = this.fullList.filter(item=>{
+            return item.id == id
+          })
+        }else{
+          this.list = this.fullList
+        }
+        if(name){
+          this.list = this.list.filter(item=>{
             return item.name.includes(name)
           })
         }
@@ -300,15 +286,6 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
         this.temp.id = parseInt(this.temp.id)
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
@@ -320,7 +297,6 @@
           })
           this.getList()
         })
-        //})
 
       },
       handleUpdate(row) {
@@ -365,15 +341,6 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
         add(this.temp).then(res=>{
           this.list.unshift(this.temp)
           this.dialogFormVisible = false
