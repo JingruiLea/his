@@ -3,7 +3,8 @@ import {
   getDepartments,
   getSettlementCategorys,
   getRegistrationLevel,
-  getUsers
+  getUsers,
+  getDiseaseClassifications
 } from '@/api/bus'
 
 
@@ -56,7 +57,15 @@ let bus = new Vue({
       getRegistrationLevel().then(res=>{
         this.registrationLevels = res.data
       })
+    },
+    getDiseaseClassifications() {
+      getDiseaseClassifications().then(res => {
+        this.diseaseClassifications = res.data
+      })
     }
+  },
+  created(){
+    this.getDiseaseClassifications()
   }
 })
 

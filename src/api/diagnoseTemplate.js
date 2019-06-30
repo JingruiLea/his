@@ -8,25 +8,25 @@ export function list(data) {
   })
 }
 
-export function getChargeItems(data) {
+export function create(data) {
   return request({
-    url: '/diagnoseTemplate/list',
+    url: '/diagnoseTemplate/create',
     method: 'post',
     data
   })
 }
 
-export function getHistoryChargeItems(data) {
+export function _delete(data) {
   return request({
-    url: '/outpatientCharge/getHistoryChargeItems',
+    url: '/diagnoseTemplate/delete',
     method: 'post',
     data
   })
 }
 
-export function charge(data) {
+export function update(data) {
   return request({
-    url: '/outpatientCharge/charge',
+    url: '/outpatientCharge/update',
     method: 'post',
     data
   })
