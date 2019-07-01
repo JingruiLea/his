@@ -9,6 +9,9 @@ import resize from './mixins/resize'
 export default {
   mixins: [resize],
   props: {
+    time:{
+      type: Array
+    },
     className: {
       type: String,
       default: 'chart'
@@ -33,6 +36,7 @@ export default {
   },
   mounted() {
     this.initChart()
+    this.$emit('update:time', '1231413')
   },
   beforeDestroy() {
     if (!this.chart) {
