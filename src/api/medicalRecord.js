@@ -43,3 +43,10 @@ export function confirmMedicalRecord(data) {
     data
   })
 }
+export function registrationInfo(data) {
+  return request({
+    url: '/medicalRecord/confirmMedicalRecord',
+    method: 'post',
+    data
+  })
+}

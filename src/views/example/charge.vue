@@ -234,23 +234,22 @@
     },
     methods: {
       getList() {
-        this.listLoading = true
         let medical_record_id = parseInt(this.medicalRecordId)
         getHistoryChargeItems({medical_record_id}).then(response => {
           const {data} = response
           this.list = data
           this.fullList = this.list
           this.total = data.length
-
-          // Just to simulate the time of the request
-          setTimeout(() => {
-            this.listLoading = false
-          }, 1.5 * 1000)
         })
       },
       handleFilter() {
         this.listQuery.page = 1
         let name = this.listQuery.name
+
+        this.listLoading = true
+        setTimeout(() => {
+          this.listLoading = false
+        }, 1.5 * 1000)
         console.log(name)
         if(name){
           this.list = this.fullList.filter(item=>{

@@ -136,7 +136,7 @@
       },
       examToSubmit(){
         let res = {
-          medical_record_id:this.exam.medical_record_id,
+          medical_record_id:this.medical_record_id,
           non_drug_id_list: [],
           id:this.exam.id,
           template_name:this.exam.template_name,
@@ -162,7 +162,7 @@
       },
       backFromCreatingTemplate(){
         if(this.hasSubmit){
-          this.$emit('update:diagnose', JSON.parse(JSON.stringify(this.savedDiagnose)))
+          this.$emit('update:exam', JSON.parse(JSON.stringify(this.savedExam)))
         }
         this.creatingTemplate = false
       },

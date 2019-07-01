@@ -51,3 +51,11 @@ export function calculateFee(data) {
     data
   })
 }
+
+export function selectById(data) {
+  return request({
+    url: '/outpatientRegistration/selectById',
+    method: 'post',
+    data
+  })
+}

@@ -3,7 +3,7 @@
     <el-aside width="230px" class="medical-asider">
       <div>
         <el-table
-          stripe
+          highlight-current-row
           :data="patients"
           style="width: 100%"
           row-class-name="asider-item"
@@ -510,7 +510,6 @@
             duration: 2000
           })
         })
-        this.activeIndex = '2'
       },
       resetDiagnose(){
         this.diagnose = {
@@ -663,6 +662,7 @@
         this.pres.id = this.savedPres.id
       },
       onPatientClick(row) {
+        this.activeIndex = '0'
         this.registrationInfo = row
         getMedicalRecord({medical_record_id: row.medical_record_id}).then(res => {
           this.medicalRecord = res.data
@@ -810,6 +810,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.medicalRecord.status = '已提交'
             })
           } else {
             this.$notify({
