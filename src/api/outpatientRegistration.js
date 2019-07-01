@@ -46,7 +46,7 @@ export function syncDoctorList(data) {
 
 export function calculateFee(data) {
   return request({
-    url: '/outpatientRegistration/calulateFee',
+    url: '/outpatientRegistration/calculateFee',
     method: 'post',
     data
   })

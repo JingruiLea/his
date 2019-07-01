@@ -30,8 +30,9 @@
         <el-tab-pane label="检查" :disabled="medicalRecord.status != '已提交'" name="2"></el-tab-pane>
         <el-tab-pane label="检验" :disabled="medicalRecord.status != '已提交'" name="3"></el-tab-pane>
         <el-tab-pane label="处置" :disabled="medicalRecord.status != '已提交'" name="4"></el-tab-pane>
-        <el-tab-pane label="处方开立" :disabled="medicalRecord.status != '已提交'" name="5"></el-tab-pane>
-        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="6"></el-tab-pane>
+        <el-tab-pane label="成药处方" :disabled="medicalRecord.status != '已提交'" name="5"></el-tab-pane>
+        <el-tab-pane label="草药处方" :disabled="medicalRecord.status != '已提交'" name="6"></el-tab-pane>
+        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="7"></el-tab-pane>
       </el-tabs>
       <div>
         <el-row>
@@ -43,7 +44,7 @@
               @apply="applyPreview"
               @back="preview = false"/>
           </el-col>
-          <el-col v-else :span="11">
+          <el-col v-else :span="activeIndex > '4'? 6 : 11">
             <el-row @mouseenter.native="onTreeHover(0)">
               <el-input
                 placeholder="模板搜索"
@@ -153,12 +154,19 @@
                 </el-table>
               </el-col>
             </el-row>
-            <el-row v-if="activeIndex>'1' && activeIndex<'5'">
+            <el-row v-if="activeIndex > '1' && activeIndex < '5'">
               <exam-table
                 :template-height.sync="templateHeight"
                 @exam-click="onAddExam"
                 :type="activeIndex - 2"
               ></exam-table>
+            </el-row>
+            <el-row v-if="activeIndex > '4'">
+              <pres-table
+                :template-height.sync="templateHeight"
+                @exam-click="onAddPres"
+                :type="activeIndex - 5"
+              ></pres-table>
             </el-row>
           </el-col>
           <el-col :span="12" :offset="1">
@@ -229,7 +237,6 @@
             <exam-edit
               :medical_record_id="medicalRecord.id"
               @apply="applyExamTemplate"
-              @next="onDiagnoseNext"
               @back="backFromExamPreview"
               :template.sync="isExamTemplate"
               :exam.sync="exam"
@@ -237,6 +244,18 @@
               @fresh="getExamTemplateList(activeIndex - 2)"
               :type="activeIndex - 2"
             ></exam-edit>
+          </el-col>
+          <el-col v-if="activeIndex > '4'" :span="17" :offset="1">
+            <pres-edit
+              :medical_record_id="medicalRecord.id"
+              @apply="applyPresTemplate"
+              @back="backFromPresPreview"
+              :template.sync="isPresTemplate"
+              :pres.sync="pres"
+              :has-submit="hasSubmit"
+              @fresh="getPrescriptionTemplateList"
+              :type="activeIndex - 5"
+            ></pres-edit>
           </el-col>
         </el-row>
 
@@ -266,14 +285,24 @@
   import ExamTable from "./components/ExamTable";
   import ExamEdit from "./components/ExamEdit";
   import {create as createExam, update as updateExam, detail as detailExam} from '@/api/exam'
-  import {list as listPresTemplateList} from '@/api/prescriptionTemplate'
+  import {list as listPresTemplateList, detail as detailPresTemplate} from '@/api/prescriptionTemplate'
+  import PresTable from "./components/PresTable";
+  import PresEdit from "./components/PresEdit";
 
   //TODO 分多页
   export default {
     name: 'medicalRecordIndex',
-    components: {ExamEdit, ExamTable, DiagnoseEdit, MedicalRecordPreviewer},
+    components: {PresEdit, PresTable, ExamEdit, ExamTable, DiagnoseEdit, MedicalRecordPreviewer},
     data() {
       return {
+        pres:{
+          template_name:'处方模板',
+          display_type:0,
+          type:0,
+          medical_record_id:0,
+          items:[]
+        },
+        savedPres:{},
         exam:{
           template_name:'检查模板',
           display_type:0,
@@ -378,7 +407,7 @@
           current_medical_history: [{required: true, message: '请填写', trigger: 'change'}],
           current_treatment_situation: [{required: true, message: '请填写', trigger: 'change'}]
         },
-        activeIndex: '2',
+        activeIndex: '0',
         tableRowClassName: "table-row",
         patients: [],
         medicalRecord: {
@@ -405,7 +434,8 @@
         isDiagnoseTemplate: false,
         isExamTemplate:false,
         savedExam:{},
-        savedMedicalRecord:{}
+        savedMedicalRecord:{},
+        isPresTemplate:false
       }
     },
     computed: {
@@ -441,6 +471,14 @@
           }
         }
         this.exam.nonDrugs.unshift(exam)
+      },
+      onAddPres(data){
+        for(let i of this.pres.items){
+          if(i.drug.id == data.drug.id){
+            return
+          }
+        }
+        this.pres.items.push(data)
       },
       onDiagnoseTempSave(diagnose){
         console.log(this.medicalRecord)
@@ -619,6 +657,10 @@
         console.log("savedExam", this.savedExam)
         this.exam.id = this.savedExam.id
       },
+      applyPresTemplate(){
+        this.isPresTemplate = false
+        this.pres.id = this.savedPres.id
+      },
       onPatientClick(row) {
         this.registrationInfo = row
         getMedicalRecord({medical_record_id: row.medical_record_id}).then(res => {
@@ -717,13 +759,28 @@
       },
       handleNodeClick2(data, node){
         if (data.id != 'personal' && data.id != 'department' && data.id != 'hospital') {
-          detailExam({exam_template_id:data.id}).then(res=>{
-            console.log(this.exam)
-            this.savedExam = JSON.parse(JSON.stringify(this.exam))
-            this.isExamTemplate = true
-            this.exam = this.templateToExam(res.data)
-          })
+          if(this.activeIndex < 5){
+            detailExam({exam_template_id:data.id}).then(res=>{
+              console.log(this.exam)
+              this.savedExam = JSON.parse(JSON.stringify(this.exam))
+              this.isExamTemplate = true
+              this.exam = this.templateToExam(res.data)
+            })
+          }
+          else{
+            detailPresTemplate({id:data.id}).then(res=>{
+              this.isPresTemplate = true
+              this.savedPres = JSON.parse(JSON.stringify(this.pres))
+              this.pres = JSON.parse(JSON.stringify(res.data))
+            })
+          }
         }
+      },
+      backFromPresPreview(){
+        this.isPresTemplate = false
+        let temp = JSON.parse(JSON.stringify(this.pres))
+        this.pres = JSON.parse(JSON.stringify(this.savedPres))
+        this.savedPres = temp
       },
       getList() {
         getPatientList().then(res => {
