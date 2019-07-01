@@ -8,9 +8,9 @@ export function all(data) {
   })
 }
 
-export function getChargeItems(data) {
+export function create(data) {
   return request({
-    url: '/diagnoseTemplate/list',
+    url: '/exam/create',
     method: 'post',
     data
   })
@@ -18,15 +18,15 @@ export function getChargeItems(data) {
 
 export function update(data) {
   return request({
-    url: '/medicalRecord/updateDiagnose',
+    url: '/exam/update',
     method: 'post',
     data
   })
 }
 
-export function getHistoryChargeItems(data) {
+export function _delete(data) {
   return request({
-    url: '/outpatientCharge/getHistoryChargeItems',
+    url: '/exam/delete',
     method: 'post',
     data
   })
@@ -34,9 +34,9 @@ export function getHistoryChargeItems(data) {
 
 
 
-export function withdraw(data) {
+export function list(data) {
   return request({
-    url: '/outpatientCharge/withdraw',
+    url: '/exam/list',
     method: 'post',
     data
   })

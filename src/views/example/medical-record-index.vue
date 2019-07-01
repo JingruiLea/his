@@ -35,6 +35,7 @@
         <el-row>
           <el-col v-if="preview" :span="11">
             <medical-record-previewer
+              @fresh="getMedicalRecordTemplateList"
               :medical-record.sync="medicalRecordPreview"
               :template="previewIsTemplate"
               @apply="applyPreview"
@@ -47,11 +48,26 @@
                 v-model="templateName"
               >
               </el-input>
+              <div v-if="activeIndex=='0' || activeIndex == '1'">
+                <el-tree
+                  ref="tree"
+                  :filter-node-method="filterNode"
+                  :data="templateClasses"
+                  :props="defaultProps"
+                  default-expand-all
+                  @node-click="handleNodeClick"
+                  class="tree-class"
+                  :style="{
+                    height: templateHeight + 'em',
+                    }"
+                ></el-tree>
+              </div>
               <el-tree
-                ref="tree"
+                v-if="activeIndex=='2'"
+                ref="tree2"
                 :filter-node-method="filterNode"
-                :data="templateClasses"
-                :props="defaultProps"
+                :data="templateClasses2"
+                :props="defaultProps2"
                 default-expand-all
                 @node-click="handleNodeClick"
                 class="tree-class"
@@ -137,7 +153,8 @@
             </el-row>
             <el-row v-if="activeIndex=='2'">
               <exam-table
-                :template-height="templateHeight"
+                :template-height.sync="templateHeight"
+                @exam-click="onAddExam"
               ></exam-table>
             </el-row>
           </el-col>
@@ -205,6 +222,18 @@
               @reset="resetDiagnose"
             ></diagnose-edit>
           </el-col>
+          <el-col v-if="activeIndex == '2'" :span="12" :offset="1">
+            <exam-edit
+              :medical_record_id="medicalRecord.id"
+              @next="onDiagnoseNext"
+              @apply="applyDiagnoseTemplate"
+              @back="isDiagnoseTemplate = false"
+              :template.sync="isDiagnoseTemplate"
+              :exam.sync="exam"
+              :has-submit="hasSubmit"
+              @fresh="getExamTemplateList"
+            ></exam-edit>
+          </el-col>
         </el-row>
 
       </div>
@@ -231,14 +260,24 @@
   import DiagnoseEdit from "./components/diagnose-edit";
   import {update as updateDiagnose} from '@/api/diagnose'
   import ExamTable from "./components/ExamTable";
+  import ExamEdit from "./components/ExamEdit";
+  import {create as createExam, update as updateExam, _delete as deleteExam} from '@/api/exam'
 
 
   //TODO 分多页
   export default {
     name: 'medicalRecordIndex',
-    components: {ExamTable, DiagnoseEdit, MedicalRecordPreviewer},
+    components: {ExamEdit, ExamTable, DiagnoseEdit, MedicalRecordPreviewer},
     data() {
       return {
+        exam:{
+          template_name:'检查模板',
+          display_type:0,
+          type:0,
+          medical_record_id:0,
+          non_drug_id_list:[],
+          nonDrugs:[]
+        },
         diagnose: {
           western_diagnose: [],
           chinese_diagnose: [],
@@ -281,6 +320,27 @@
             children: []
           }
         ],
+        templateClasses2:[
+          {
+            id: 'personal',
+            template_name: '个人模板',
+            children: []
+          },
+          {
+            id: 'department',
+            template_name: '科室模板',
+            children: []
+          },
+          {
+            id: 'hospital',
+            template_name: '全院模板',
+            children: []
+          }
+        ],
+        defaultProps2:{
+          children: 'children',
+          label: 'template_name'
+        },
         medicalTempClasses: [
           {
             id: 'personal',
@@ -367,6 +427,14 @@
       }
     },
     methods: {
+      onAddExam(exam){
+        for(let i of this.exam.nonDrugs){
+          if(i.id == exam.id){
+            return
+          }
+        }
+        this.exam.nonDrugs.unshift(exam)
+      },
       onDiagnoseTempSave(diagnose){
         console.log(this.medicalRecord)
         updateDiagnose({medical_record_id:this.medicalRecord.id, diagnose:diagnose}).then(res=>{
@@ -441,7 +509,9 @@
         if (type == 0) {
           if (this.templateHeight == 25) {
             this.templateHeight = 15
-          } else {
+          } else if(this.templateHeight == 5){
+            this.templateHeight = 15
+          }else{
             this.templateHeight = 25
           }
         } else {
@@ -641,24 +711,21 @@
       },
       getExamTemplateList() {
         getExamTemplateList({type: 0}).then(res => {
-          this.templateClasses[0].children = []
-          this.templateList = res.data
-          for (const i of  this.templateList.personal) {
-            this.templateClasses[0].children.push(i)
+          this.templateClasses2[0].children = []
+          for (const i of  res.data) {
+            this.templateClasses2[0].children.push(i)
           }
         })
         getExamTemplateList({type: 1}).then(res => {
-          this.templateClasses[1].children = []
-          this.templateList = res.data
-          for (const i of  this.templateList.personal) {
-            this.templateClasses[1].children.push(i)
+          this.templateClasses2[1].children = []
+          for (const i of  res.data) {
+            this.templateClasses2[1].children.push(i)
           }
         })
         getExamTemplateList({type: 2}).then(res => {
-          this.templateClasses[2].children = []
-          this.templateList = res.data
-          for (const i of  this.templateList.personal) {
-            this.templateClasses[2].children.push(i)
+          this.templateClasses2[2].children = []
+          for (const i of  res.data) {
+            this.templateClasses2[2].children.push(i)
           }
         })
       },

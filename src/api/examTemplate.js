@@ -8,9 +8,9 @@ export function list(data) {
   })
 }
 
-export function getChargeItems(data) {
+export function create(data) {
   return request({
-    url: '/diagnoseTemplate/list',
+    url: '/examTemplate/create',
     method: 'post',
     data
   })

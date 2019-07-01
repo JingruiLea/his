@@ -87,6 +87,7 @@
             type: 'success',
             duration: 2000
           })
+          this.$emit('fresh')
           this.goBack()
         })
       },
