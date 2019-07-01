@@ -1,27 +1,31 @@
 <template>
   <div class="app-container">
     <el-row>
-     <el-col :span="8">
-       <el-row class="demo-input-suffix">
-         <el-col :span="16">
-         <el-input
-           placeholder="输入日期以筛选"
-           suffix-icon="el-icon-date"
-           v-model="dateInput">
-         </el-input>
-         </el-col>
-         <el-col :span="8">
-         <el-button class="filter-item" style="margin-left: 10px;float: right;" type="primary" icon="el-icon-edit" @click="handleCreate()">
-           新日结
-         </el-button>
-         </el-col>
-       </el-row>
+      <el-col :span="11">
+        <el-row class="demo-input-suffix">
+          <el-col :span="10">
+            <el-select @change="handleFilter" v-model="tempCollector.id" placeholder="请选择收费员" class="filter-item" style="width: 10em">
+              <el-option v-for="item,index in collectors" :key="index" :label="item.name" :value="item.id" />
+            </el-select>
+          </el-col>
+          <el-col :span="11" :offset="1">
+            <el-date-picker
+              v-model="collectDate"
+              type="daterange"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              range-separator="-"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期">
+            </el-date-picker>
+          </el-col>
+        </el-row>
         <el-table
           ref="singleTable"
           highlight-current-row
           @row-click="handleCurrentChange"
           :data="historyList"
           header-row-class-name="daily-detail-header"
+          cell-class-name="align-center-cell"
           style="width: 100%">
           <el-table-column
             prop="start_time"
@@ -44,9 +48,18 @@
                 disable-transitions>{{scope.row.checked?'已核对':'未核对'}}</el-tag>
             </template>
           </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="{row}">
+              <el-button
+                size="mini"
+                type="primary"
+                :disabled="row.checked"
+                @click="handleEdit(row)">核对</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </el-col>
-      <el-col :span="14" :offset="1">
+      <el-col :span="12" :offset="1">
         <el-table
           :data="detailsList"
           style="width: 100%"
@@ -86,40 +99,12 @@
         </el-table>
       </el-col>
     </el-row>
-
-    <el-dialog style="text-align: center;" :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-date-picker
-        v-model="collectDate.end_time"
-        type="date"
-        @change="changeDate"
-        value-format="yyyy-MM-dd HH:mm:ss"
-        placeholder="选择日结结束日期">
-      </el-date-picker>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
-          取消
-        </el-button>
-        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          确认
-        </el-button>
-      </div>
-    </el-dialog>
-
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, detail, collect} from '@/api/daily-collect'
+  import {getAll, detail, collect, update, init} from '@/api/daily-check'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -162,14 +147,14 @@
       }
     },
     computed:{
-
+      collectors(){
+        return bus.collectors
+      }
     },
     watch:{
-      dateInput(val){
-        this.historyList = this.fullList.filter(ele=>{
-          if(ele.start_time.includes(val) || ele.end_time.includes(val))
-            return true;
-        })
+      collectDate(val){
+        console.log(val);
+        this.handleFilter()
       }
     },
     data() {
@@ -184,14 +169,19 @@
             }
           }]
         },
+        tempCollector:{
+          id:10001,
+          name:'挂号收费员(测试'
+        },
         dateInput:"",
         currentRow: null,
-        collectDate:{
-          start_time:'',
-          end_time:'2019-06-29 00:00:00'
-        },
+        collectDate:[
+          '2000-01-01 00:00:00',
+          '2020-01-01 00:00:00'
+        ],
         historyList:null,
         detailsList:null,
+        collectorList:null,
         tableKey: 0,
         list: null,
         fullList : null,
@@ -220,18 +210,42 @@
         },
         dialogPvVisible: false,
         pvData: [],
-        rules: {
-          // type: [{ required: true, message: 'type is required', trigger: 'change' }],
-          // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-          // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-        },
+        rules: {},
         downloadLoading: false
       }
     },
     created() {
       this.getHistoryList()
+      this.getCollectors()
     },
     methods: {
+      handleFilter(){
+        console.log(this.tempCollector.id)
+        this.historyList = this.fullList.filter(ele=>{
+          if(ele.user_id == this.tempCollector.id)
+            return true;
+        })
+        console.log(this.historyList)
+        this.historyList = this.historyList.filter(ele=>{
+          if(ele.start_time >= this.collectDate[0] && ele.end_time <= this.collectDate[1])
+            return true;
+        })
+      },
+      getCollectors() {
+        this.listLoading = true
+        init().then(response => {
+          const {data} = response
+          bus.collectors = data
+          console.log(data)
+          this.collectorList = data
+          this.tempCollector = {id:10001,name:'挂号收费员(测试'}
+          console.log(this.tempCollector)
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          }, 1.5 * 1000)
+        })
+      },
       filterTag(value, row) {
         return row.checked === value;
       },
@@ -239,16 +253,7 @@
         const property = column['property'];
         return row[property] === value;
       },
-      changeDate(){
-        console.log(this.collectDate)
-        let max = '1999-01-01'
-        for(let item of this.fullList){
-          if(max < item.end_time){
-            max = item.end_time
-          }
-        }
-        this.collectDate.start_time = max
-      },
+
       formatter(row, column) {
         return row.address;
       },
@@ -259,24 +264,12 @@
           this.historyList = data
           this.fullList = data
           this.total = data.length
-          this.changeDate()
 
           // Just to simulate the time of the request
           setTimeout(() => {
             this.listLoading = false
           }, 1.5 * 1000)
         })
-      },
-      handleFilter() {
-        this.listQuery.page = 1
-        let name = this.listQuery.name
-        console.log(name)
-        if(name){
-          this.list = this.fullList.filter(item=>{
-            return item.name.includes(name)
-          })
-        }
-        console.log(this.list)
       },
       setCurrent(row) {
         this.$refs.singleTable.setCurrentRow(row);
@@ -315,46 +308,10 @@
       resetTemp() {
 
       },
-      handleUpdate(row) {
-        this.temp = Object.assign({}, row) // copy obj
-        this.temp.timestamp = new Date(this.temp.timestamp)
-        this.dialogStatus = 'update'
-        this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
-      },
-      updateData() {
-        this.$refs['dataForm'].validate((valid) => {
-          if (valid) {
-            const tempData = Object.assign({}, this.temp)
-            tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            update(tempData).then(() => {
-              for (const v of this.list) {
-                if (v.id === this.temp.id) {
-                  const index = this.list.indexOf(v)
-                  this.list.splice(index, 1, this.temp)
-                  break
-                }
-              }
-              this.dialogFormVisible = false
-              this.$notify({
-                title: 'Success',
-                message: 'Update Successfully',
-                type: 'success',
-                duration: 2000
-              })
-            })
-          }
-        })
-      },
       handleCreate() {
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
-        //this.$nextTick(() => {
-        //  this.$refs['dataForm'].clearValidate()
-        //})
       },
       createData() {
         collect(this.collectDate).then(res=>{
@@ -370,36 +327,10 @@
         //})
 
       },
-      handleDelete(row) {
-        console.log(`line 354: delete ${row}`)
-        _delete({data:[row.id]}).then(res =>{
-          this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList()
-        })
-      },
       handleFetchPv(pv) {
         fetchPv(pv).then(response => {
           this.pvData = response.data.pvData
           this.dialogPvVisible = true
-        })
-      },
-      handleDownload() {
-        this.downloadLoading = true
-        import('@/vendor/Export2Excel').then(excel => {
-          const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-          const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-          const data = this.formatJson(filterVal, this.list)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data,
-            filename: 'table-list'
-          })
-          this.downloadLoading = false
         })
       },
       formatJson(filterVal, jsonData) {
@@ -426,6 +357,9 @@
     bottom:0 !important;
   }
   .daily-detail-header .cell{
+    text-align: center;
+  }
+  .align-center-cell .cell{
     text-align: center;
   }
 </style>

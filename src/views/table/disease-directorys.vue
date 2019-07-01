@@ -1,31 +1,28 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+      <el-input v-model="listQuery.id" placeholder="编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.code" placeholder="国际标准码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.custom_name" placeholder="自定义名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
+      <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
+        删除
+      </el-button>
+      <el-checkbox v-model="canMultiDelete" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        批量删除
       </el-checkbox>
     </div>
 
-    <el-select @change="handleChange" v-model="tempClassification.id" placeholder="选择类型" class="filter-item" style="width: 10em">
+    <el-select @change="handleChange" filterable v-model="tempClassification.id" placeholder="选择类型" class="filter-item" style="width: 10em">
       <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
     </el-select>
 
@@ -38,38 +35,44 @@
       highlight-current-row
       style="width: 100%;"
       @sort-change="sortChange"
+      @selection-change="handleSelectionChange"
     >
+      <el-table-column
+        v-if="canMultiDelete"
+        type="selection"
+      >
+      </el-table-column>
       <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="国际标准码" prop="id" align="center" width="80">
+      <el-table-column label="国际标准码" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="名称" prop="id" sortable="custom" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="拼音" prop="id" align="center" width="80">
+      <el-table-column label="拼音" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.pinyin }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="分类" prop="id"  align="center" width="80">
+      <el-table-column label="分类" prop="id"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.classification_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="自定义名称" prop="id" align="center" width="80">
+      <el-table-column label="自定义名称" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.custom_name}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="自定义助记符" prop="id" align="center" width="80">
+      <el-table-column label="自定义助记符" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.custom_pinyin}}</span>
         </template>
@@ -81,14 +84,14 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(row)">
+          <el-button size="mini" v-if="!canMultiDelete" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -102,7 +105,7 @@
           <el-input v-model="temp.pinyin" />
         </el-form-item>
         <el-form-item label="分类" prop="username">
-          <el-select v-model="temp.classification_id" class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.classification_id" filterable class="filter-item" placeholder="Please select">
             <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -112,18 +115,6 @@
         <el-form-item label="自定义助记符" prop="department_id">
           <el-input v-model="temp.custom_pinyin" />
         </el-form-item>
-
-        <!--        <el-form-item label="Status">-->
-        <!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-        <!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-        <!--          </el-select>-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Imp">-->
-        <!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-        <!--        </el-form-item>-->
-        <!--        <el-form-item label="Remark">-->
-        <!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-        <!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -199,12 +190,14 @@
         fullList : null,
         total: 0,
         listLoading: true,
+        canMultiDelete: false,
+        multiSelection:[],
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
+          custom_name: undefined,
+          code: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -231,34 +224,40 @@
         },
         dialogPvVisible: false,
         pvData: [],
-        rules: {
-          // type: [{ required: true, message: 'type is required', trigger: 'change' }],
-          // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-          // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
-        },
+        rules: {},
         downloadLoading: false
       }
     },
     created() {
       this.getDiseaseClassificationsList()
-
-      if(bus.diseaseClassifications.length == 0){
-        //bus.getDiseaseClassifications()
-      }
-
     },
     methods: {
+      multiDelete(){
+        let data = this.multiSelection.map(item=>{
+          return item.id
+        })
+        _delete({data:data}).then(res =>{
+          this.$notify({
+            title: 'Success',
+            message: 'Delete Successfully',
+            type: 'success',
+            duration: 2000
+          })
+          this.getDiseaseList(this.tempClassification.id)
+        })
+      },
+      handleSelectionChange(val){
+        this.multiSelection = val
+      },
       getDiseaseClassificationsList() {
         this.listLoading = true
         getAll().then(response => {
           const {data} = response
           bus.diseaseClassifications = data
-          console.log(data)
           this.list = data
           this.fullList = this.list
           this.total = data.length
           this.tempClassification = {id:1,name:'阿米巴病'}
-          console.log(this.tempClassification)
           this.getDiseaseList(this.tempClassification.id)
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -275,23 +274,59 @@
           this.list = diseases
           this.fullList = this.list
           this.total = diseases.length
+          this.listQuery = {
+            page: 1,
+            limit: 20,
+            id: undefined,
+            custom_name: undefined,
+            code: undefined,
+            name: undefined,
+            sort: '+id'
+          }
+          this.handleFilter();
 
           // Just to simulate the time of the request
           setTimeout(() => {
             this.listLoading = false
-          }, 1.5 * 1000)
+          }, 1.5 * 800)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
+      handleFilter(flag) {
         let name = this.listQuery.name
-        console.log(name)
-        if(name){
+        let id = this.listQuery.id
+        let code = this.listQuery.code
+        let custom_name = this.listQuery.custom_name
+        if(id){
           this.list = this.fullList.filter(item=>{
-            return item.username.includes(name)
+            return item.id==id
+          })
+        }else{
+          this.list = this.fullList
+        }
+        if(code){
+          this.list = this.list.filter(item=>{
+            return item.code.includes(code)
           })
         }
-        console.log(this.list)
+        if(name) {
+          this.list = this.list.filter(item => {
+            return item.name.includes(name)
+          })
+        }
+        if(custom_name){
+          this.list = this.list.filter(item=>{
+            if(item.custom_name)
+              return item.custom_name.includes(custom_name)
+          })
+        }
+        this.total = this.list.length
+        if(flag == 1) {
+          this.listQuery.page = 1
+          this.total = this.list.length
+        }
+        let start = this.listQuery.limit*(this.listQuery.page-1)
+        let end = this.listQuery.limit*this.listQuery.page
+        this.list = this.list.slice(start,end)
       },
       searchByName(){
         let name = this.listQuery.name
@@ -345,15 +380,6 @@
         this.getDiseaseList(this.tempClassification.id)
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
         this.temp.id = parseInt(this.temp.id)
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
@@ -363,7 +389,7 @@
             type: 'success',
             duration: 2000
           })
-          this.getList()
+          this.getDiseaseList(this.tempClassification.id)
         })
         //})
 
@@ -397,6 +423,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getDiseaseList(this.tempClassification.id)
             })
           }
         })
@@ -412,7 +439,7 @@
           })
           const index = this.list.indexOf(row)
           this.list.splice(index, 1)
-          this.getList()
+          this.getDiseaseList(this.tempClassification.id)
         })
       },
       handleFetchPv(pv) {

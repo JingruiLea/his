@@ -1,24 +1,18 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
-        Search
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.name" placeholder="登录名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.real_name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.department" placeholder="部门" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
+        查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
+        导入
       </el-button>
       <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
         删除
@@ -92,7 +86,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
@@ -118,18 +112,6 @@
         <el-form-item label="职位" prop="timestamp">
           <el-input v-model="temp.title" />
         </el-form-item>
-
-<!--        <el-form-item label="Status">-->
-<!--          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">-->
-<!--            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />-->
-<!--          </el-select>-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="Imp">-->
-<!--          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />-->
-<!--        </el-form-item>-->
-<!--        <el-form-item label="Remark">-->
-<!--          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />-->
-<!--        </el-form-item>-->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -155,7 +137,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {all, _delete, add} from '@/api/userMana'
+  import {all, _delete, add,update,_import} from '@/api/userMana'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -211,9 +193,9 @@
         listQuery: {
           page: 1,
           limit: 20,
-          importance: undefined,
-          title: undefined,
-          type: undefined,
+          id: undefined,
+          real_name: undefined,
+          department: undefined,
           name: undefined,
           sort: '+id'
         },
@@ -269,7 +251,6 @@
           })
           this.getList()
         })
-
       },
       getList() {
         this.listLoading = true
@@ -285,6 +266,16 @@
           })
           this.fullList = this.list
           this.total = users.length
+          this.listQuery = {
+            page: 1,
+            limit: 20,
+            id: undefined,
+            real_name: undefined,
+            department: undefined,
+            name: undefined,
+            sort: '+id'
+          }
+          this.handleFilter();
 
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -292,10 +283,11 @@
           }, 1.5 * 1000)
         })
       },
-      handleFilter() {
-        this.listQuery.page = 1
+      handleFilter(flag) {
         let name = this.listQuery.name
-        console.log(name)
+        let real_name = this.listQuery.real_name
+        let id = this.listQuery.id
+        let department = this.listQuery.department
         if(name){
           this.list = this.fullList.filter(item=>{
             return item.username.includes(name)
@@ -303,7 +295,28 @@
         }else{
           this.list = this.fullList
         }
-        console.log(this.list)
+        if(real_name){
+          this.list = this.list.filter(item=>{
+            return item.real_name.includes(real_name)
+          })
+        }
+        if(id){
+          this.list = this.list.filter(item=>{
+            return item.uid == id
+          })
+        }
+        if(department){
+          this.list = this.list.filter(item=>{
+            return item.department.includes(department)
+          })
+        }
+        if(flag == 1) {
+          this.listQuery.page = 1
+          this.total = this.list.length
+        }
+        let start = this.listQuery.limit*(this.listQuery.page-1)
+        let end = this.listQuery.limit*this.listQuery.page
+        this.list = this.list.slice(start,end)
       },
       searchByName(){
         let name = this.listQuery.name
@@ -357,15 +370,6 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-          // if (valid) {
-          //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          //   this.temp.author = 'vue-element-admin'
-          //   createArticle(this.temp).then(() => {
-
-          //   })
-          // }
-          //console.log(`post data${JSON.stringify(this.temp)}`)
           add(this.temp).then(res=>{
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
@@ -394,7 +398,7 @@
           if (valid) {
             const tempData = Object.assign({}, this.temp)
             tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            updateArticle(tempData).then(() => {
+            update(tempData).then(() => {
               for (const v of this.list) {
                 if (v.id === this.temp.id) {
                   const index = this.list.indexOf(v)
@@ -409,6 +413,7 @@
                 type: 'success',
                 duration: 2000
               })
+              this.getList()
             })
           }
         })
@@ -422,8 +427,10 @@
             type: 'success',
             duration: 2000
           })
+          const index = this.list.indexOf(row)
+          this.list.splice(index, 1)
+          this.getList()
         })
-        this.getList()
       },
       handleFetchPv(pv) {
         fetchPv(pv).then(response => {

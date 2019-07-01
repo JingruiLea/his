@@ -908,6 +908,15 @@
 
   .asider-item .cell {
     text-align: center;
+    padding-top: 0.7em;
+    /*border-bottom: 1px solid rgb(192, 192, 192);*/
+    vertical-align: center;
+    cursor: pointer;
+  }
+
+  .tree-class {
+    overflow-y: scroll;
+    transition: height ease .5s;
   }
 
   .disease-class .cell {
@@ -918,5 +927,16 @@
     border: 0;
     height: 1px;
     background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+  }
+
+  .medical-container ::-webkit-scrollbar
+  {
+    width:8px;
+    height:8px;
+    background-color:#F5F5F5;
+  }
+  .medical-container ::-webkit-scrollbar-thumb{
+    background-color:#D3D3D3;
+    border-radius:4px;
   }
 </style>

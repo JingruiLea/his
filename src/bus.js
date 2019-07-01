@@ -18,7 +18,8 @@ let bus = new Vue({
     departmentClassifications:[],
     registrationLevels:[],
     diseaseClassifications:[],
-    expenseClassifications:[]
+    expenseClassifications:[],
+    collectors:[]
   },
   methods:{
     getUsers(){
