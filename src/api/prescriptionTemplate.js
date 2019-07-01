@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export function all(data) {
+export function list(data) {
   return request({
-    url: '/exam/allItems',
+    url: 'prescriptionTemplate/list',
     method: 'post',
     data
   })
@@ -31,15 +31,6 @@ export function _delete(data) {
     data
   })
 }
-
-export function list(data) {
-  return request({
-    url: '/exam/list',
-    method: 'post',
-    data
-  })
-}
-
 
 export function detail(data) {
   return request({

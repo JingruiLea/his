@@ -27,9 +27,11 @@
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
         <el-tab-pane label="初步诊断" name="1"></el-tab-pane>
-        <el-tab-pane label="检查检验" :disabled="medicalRecord.status != '已提交'" name="2"></el-tab-pane>
-        <el-tab-pane label="处方开立" :disabled="medicalRecord.status != '已提交'" name="3"></el-tab-pane>
-        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="4"></el-tab-pane>
+        <el-tab-pane label="检查" :disabled="medicalRecord.status != '已提交'" name="2"></el-tab-pane>
+        <el-tab-pane label="检验" :disabled="medicalRecord.status != '已提交'" name="3"></el-tab-pane>
+        <el-tab-pane label="处置" :disabled="medicalRecord.status != '已提交'" name="4"></el-tab-pane>
+        <el-tab-pane label="处方开立" :disabled="medicalRecord.status != '已提交'" name="5"></el-tab-pane>
+        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="6"></el-tab-pane>
       </el-tabs>
       <div>
         <el-row>
@@ -63,13 +65,13 @@
                 ></el-tree>
               </div>
               <el-tree
-                v-if="activeIndex=='2'"
+                v-if="activeIndex > '1'"
                 ref="tree2"
                 :filter-node-method="filterNode"
                 :data="templateClasses2"
                 :props="defaultProps2"
                 default-expand-all
-                @node-click="handleNodeClick"
+                @node-click="handleNodeClick2"
                 class="tree-class"
                 :style="{
                   height: templateHeight + 'em',
@@ -151,10 +153,11 @@
                 </el-table>
               </el-col>
             </el-row>
-            <el-row v-if="activeIndex=='2'">
+            <el-row v-if="activeIndex>'1' && activeIndex<'5'">
               <exam-table
                 :template-height.sync="templateHeight"
                 @exam-click="onAddExam"
+                :type="activeIndex - 2"
               ></exam-table>
             </el-row>
           </el-col>
@@ -222,16 +225,17 @@
               @reset="resetDiagnose"
             ></diagnose-edit>
           </el-col>
-          <el-col v-if="activeIndex == '2'" :span="12" :offset="1">
+          <el-col v-if="activeIndex>'1' && activeIndex<'5'" :span="12" :offset="1">
             <exam-edit
               :medical_record_id="medicalRecord.id"
+              @apply="applyExamTemplate"
               @next="onDiagnoseNext"
-              @apply="applyDiagnoseTemplate"
-              @back="isDiagnoseTemplate = false"
-              :template.sync="isDiagnoseTemplate"
+              @back="backFromExamPreview"
+              :template.sync="isExamTemplate"
               :exam.sync="exam"
               :has-submit="hasSubmit"
-              @fresh="getExamTemplateList"
+              @fresh="getExamTemplateList(activeIndex - 2)"
+              :type="activeIndex - 2"
             ></exam-edit>
           </el-col>
         </el-row>
@@ -261,8 +265,8 @@
   import {update as updateDiagnose} from '@/api/diagnose'
   import ExamTable from "./components/ExamTable";
   import ExamEdit from "./components/ExamEdit";
-  import {create as createExam, update as updateExam, _delete as deleteExam} from '@/api/exam'
-
+  import {create as createExam, update as updateExam, detail as detailExam} from '@/api/exam'
+  import {list as listPresTemplateList} from '@/api/prescriptionTemplate'
 
   //TODO 分多页
   export default {
@@ -294,6 +298,7 @@
           '0': '历史病历',
           '1': '历史诊断'
         },
+        prescriptionType: 0,
         previewIsTemplate: false,
         medicalRecordPreview: {},
         preview: false,
@@ -398,6 +403,8 @@
           type: 0
         },
         isDiagnoseTemplate: false,
+        isExamTemplate:false,
+        savedExam:{},
         savedMedicalRecord:{}
       }
     },
@@ -553,6 +560,12 @@
         if (!value) return true;
         return data.title.indexOf(value) !== -1;
       },
+      backFromExamPreview(){
+        this.isExamTemplate = false
+        let temp = JSON.parse(JSON.stringify(this.exam))
+        this.exam = JSON.parse(JSON.stringify(this.savedExam))
+        this.savedExam = temp
+      },
       backFromCreatingTemplate() {
         this.creatingTemplate = false
         if (this.medicalRecord.status == '已提交') {
@@ -600,6 +613,11 @@
             physical_examination: '检查身体',
             past_history: '过去历史'
           }
+      },
+      applyExamTemplate(){
+        this.isExamTemplate = false
+        console.log("savedExam", this.savedExam)
+        this.exam.id = this.savedExam.id
       },
       onPatientClick(row) {
         this.registrationInfo = row
@@ -650,17 +668,35 @@
             break
           }
           case '2': {
-            this.getExamTemplateList()
+            this.getExamTemplateList(0)
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
+            this.isExamTemplate = false
             break
           }
           case '3': {
-            this.getDiagnoseTemplateList()
+            this.getExamTemplateList(1)
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
+            this.isExamTemplate = false
+            break
+          }
+          case '4': {
+            this.getExamTemplateList(2)
+            this.preview = false
+            this.creatingTemplate = false
+            this.previewIsTemplate = false
+            this.isExamTemplate = false
+            break
+          }
+          case '5': {
+            this.getPrescriptionTemplateList()
+            this.preview = false
+            this.creatingTemplate = false
+            this.previewIsTemplate = false
+            this.isExamTemplate = false
             break
           }
         }
@@ -677,6 +713,16 @@
             this.diagnoseTemplate = data
             this.isDiagnoseTemplate = true
           }
+        }
+      },
+      handleNodeClick2(data, node){
+        if (data.id != 'personal' && data.id != 'department' && data.id != 'hospital') {
+          detailExam({exam_template_id:data.id}).then(res=>{
+            console.log(this.exam)
+            this.savedExam = JSON.parse(JSON.stringify(this.exam))
+            this.isExamTemplate = true
+            this.exam = this.templateToExam(res.data)
+          })
         }
       },
       getList() {
@@ -709,23 +755,13 @@
           }
         })
       },
-      getExamTemplateList() {
-        getExamTemplateList({type: 0}).then(res => {
+      getExamTemplateList(type) {
+        getExamTemplateList({type: type}).then(res => {
           this.templateClasses2[0].children = []
-          for (const i of  res.data) {
-            this.templateClasses2[0].children.push(i)
-          }
-        })
-        getExamTemplateList({type: 1}).then(res => {
           this.templateClasses2[1].children = []
-          for (const i of  res.data) {
-            this.templateClasses2[1].children.push(i)
-          }
-        })
-        getExamTemplateList({type: 2}).then(res => {
           this.templateClasses2[2].children = []
           for (const i of  res.data) {
-            this.templateClasses2[2].children.push(i)
+            this.templateClasses2[i.display_type].children.push(i)
           }
         })
       },
@@ -766,6 +802,29 @@
           }
           for (const i of  this.templateList.hospital) {
             hospitalClass.push(i)
+          }
+        })
+      },
+      templateToExam(res){
+        let temp = {
+          nonDrugs:[],
+          medical_record_id:res.medical_record_id,
+          template_name:res.template_name,
+          display_type:res.display_type,
+          type:res.type,
+        }
+        for(let i of res.exam_item){
+          temp.nonDrugs.push(i.non_drug_item)
+        }
+        return temp
+      },
+      getPrescriptionTemplateList(){
+        listPresTemplateList({type:this.prescriptionType}).then(res=>{
+          this.templateClasses2[0].children = []
+          this.templateClasses2[1].children = []
+          this.templateClasses2[2].children = []
+          for (const i of  res.data) {
+            this.templateClasses2[i.display_type].children.push(i)
           }
         })
       },

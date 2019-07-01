@@ -16,7 +16,7 @@
           <el-input
             v-model="examQuery.name"
             size="mini"
-            placeholder="查询检查"
+            placeholder="药品查询"
             @focus="onFocus"
           ></el-input>
         </template>
@@ -32,7 +32,7 @@
     props:['templateHeight','type'],
     data(){
       return{
-        allExams:[],
+        allPres:[],
         examQuery:{
           name:''
         }
@@ -45,7 +45,7 @@
     },
     computed:{
       exams(){
-        let temp = this.allExams
+        let temp = this.allPres
         if(this.examQuery.name){
           temp = temp.filter(ele=>{return ele.name.includes(this.examQuery.name)})
         }

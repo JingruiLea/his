@@ -70,61 +70,65 @@
 </template>
 
 <script>
-  import {list as listExam,create as createExam, update as updateExam, _delete as deleteExam} from '@/api/exam'
+  import {list as listExam, create as createExam, update as updateExam,send as sendExam, _delete as deleteExam, detail as detailExam} from '@/api/exam'
   import {create as createTemplate} from '@/api/examTemplate'
+
+
 
   export default {
     name:'ExamEdit',
-    props:['exam', 'hasSubmit', 'template','medical_record_id'],
+    props:['exam', 'type', 'hasSubmit', 'template','medical_record_id'],
     data(){
       return {
         creatingTemplate: false,
-        savedDiagnose: {}
+        savedExam: {},
+        initExam :{
+          medical_record_id:this.exam.medical_record_id,
+          non_drug_id_list: [],
+          id:this.exam.id,
+          template_name:this.exam.template_name,
+          display_type:this.exam.display_type,
+          type:this.type
+        }
+      }
+    },
+    watch:{
+      type(){
+        this.getExam()
       }
     },
     methods:{
-      checkMainSymptom(row) {
-        for (let i = 0; i < this.diagnose.western_diagnose.length; i++) {
-          if (this.diagnose.western_diagnose[i] == row) {
-            let temp = Object.assign({}, this.diagnose.western_diagnose[i])
-            temp.main_symptom = true
-            this.$set(this.diagnose.western_diagnose, i, temp)
-          } else {
-            let temp = Object.assign({}, this.diagnose.western_diagnose[i])
-            temp.main_symptom = false
-            this.$set(this.diagnose.western_diagnose, i, temp)
-          }
-        }
-        for (let i = 0; i < this.diagnose.chinese_diagnose.length; i++) {
-          if (this.diagnose.chinese_diagnose[i] == row) {
-            let temp = Object.assign({}, this.diagnose.chinese_diagnose[i])
-            temp.main_symptom = true
-            this.$set(this.diagnose.chinese_diagnose, i, temp)
-          } else {
-            let temp = Object.assign({}, this.diagnose.chinese_diagnose[i])
-            temp.main_symptom = false
-            this.$set(this.diagnose.chinese_diagnose, i, temp)
-          }
-        }
-      },
       removeExam(row) {
         this.exam.nonDrugs = this.exam.nonDrugs.filter(i=>i.id!=row.id)
       },
       reset(){
-        this.$emit('update:exam', {
-          medical_record_id:this.medical_record_id,
-          nonDrugs:[]
-        })
+        this.$emit('update:exam', JSON.parse(JSON.stringify(this.initExam)))
       },
       saveAsTemplate(){
         this.creatingTemplate = true
-        this.saved = JSON.parse(JSON.stringify(this.exam))
+        this.savedExam = JSON.parse(JSON.stringify(this.exam))
       },
       tempSave(){
-
+        updateExam(this.examToSubmit(this.exam)).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '暂存成功!',
+            type: 'success',
+            duration: 2000
+          })
+        })
       },
       next(){
-        this.$emit('next',JSON.parse(JSON.stringify(this.exam)))
+        updateExam(this.examToSubmit(this.exam)).then(res=>{
+          sendExam({id:[this.exam.id]}).then(res=>{
+            this.$notify({
+              title: 'Success',
+              message: '提交成功!',
+              type: 'success',
+              duration: 2000
+            })
+          })
+        })
       },
       back(){
         this.$emit('back')
@@ -136,7 +140,7 @@
           id:this.exam.id,
           template_name:this.exam.template_name,
           display_type:this.exam.display_type,
-          type:0
+          type:this.type
         }
         for(let i of this.exam.nonDrugs){
           res.non_drug_id_list.push(i.id)
@@ -162,14 +166,13 @@
         this.creatingTemplate = false
       },
       applyTemplate(){
-        this.$emit('apply')
         this.$notify({
           title: 'Success',
           message: '应用模板成功!',
           type: 'success',
           duration: 2000
         })
-        this.$emit('back')
+        this.$emit('apply')
       },
       updateTemplate(){
         updateTemplate(this.examToSubmit()).then(res=>{
@@ -194,32 +197,23 @@
           this.$emit('back')
         })
       },
-      templateToExam(res){
-        let temp = {
-          nonDrugs:[],
-          medical_record_id:res.medical_record_id
-        }
-        for(let i of res.exam_item){
+      templateToExam(data){
+        let temp = JSON.parse(JSON.stringify(data))
+        temp.nonDrugs = []
+        for(let i of data.exam_item){
           temp.nonDrugs.push(i.non_drug_item)
         }
         return temp
       },
       getExam(){
-        listExam({medical_record_id:this.medical_record_id,type:0}).then(res=>{
+        listExam({medical_record_id:this.medical_record_id,type:this.type}).then(res=>{
           if(res.data.length > 0){
-            let temp = {
-              nonDrugs:[],
-              medical_record_id:res.data[0].medical_record_id
-            }
-            for(let i of res.data[0].exam_item){
-              temp.nonDrugs.push(i.non_drug_item)
-            }
-            this.$emit('update:exam', temp)
+            this.$emit('update:exam', this.templateToExam(res.data[0]))
           }else{
             createExam({
               non_drug_id_list:[],
               medical_record_id:this.medical_record_id,
-              type:0
+              type:this.type
             }).then(res=>{
               let temp = JSON.parse(JSON.stringify(this.exam))
               temp.id = res.id
