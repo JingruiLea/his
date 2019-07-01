@@ -121,7 +121,8 @@
     },
     watch:{
       type(){
-        this.getPres()
+        if(this.medical_record_id)
+          this.getPres()
       }
     },
     methods:{
@@ -254,7 +255,7 @@
         })
       }
     },
-    created() {
+    mounted() {
       if(this.medical_record_id){
         this.getPres()
       }

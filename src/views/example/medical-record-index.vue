@@ -44,7 +44,7 @@
               @apply="applyPreview"
               @back="preview = false"/>
           </el-col>
-          <el-col v-else :span="activeIndex > '4'? 6 : 11">
+          <el-col v-else :span="activeIndex > '4'? activeIndex == '7'? 11 : 6 : 11">
             <el-row @mouseenter.native="onTreeHover(0)">
               <el-input
                 placeholder="模板搜索"
@@ -104,7 +104,7 @@
                 </el-table-column>
               </el-table>
             </el-row>
-            <el-row v-if="activeIndex=='1'" style="overflow-y: hidden;"
+            <el-row v-if="activeIndex == '1' || activeIndex == '7'" style="overflow-y: hidden;"
                     :style="{maxHeight:`calc(100vh - 180px - ${templateHeight}em`}">
               <el-col :span="12">
                 <el-table
@@ -161,7 +161,7 @@
                 :type="activeIndex - 2"
               ></exam-table>
             </el-row>
-            <el-row v-if="activeIndex > '4'">
+            <el-row v-if="activeIndex > '4' && activeIndex < '7'">
               <pres-table
                 :template-height.sync="templateHeight"
                 @exam-click="onAddPres"
@@ -219,7 +219,7 @@
               </el-form>
             </el-row>
           </el-col>
-          <el-col v-if="activeIndex == '1'" :span="12" :offset="1">
+          <el-col v-if="activeIndex == '1' || activeIndex=='7'" :span="12" :offset="1">
             <diagnose-edit
               @tempSave="onDiagnoseTempSave"
               @next="onDiagnoseNext"
@@ -245,7 +245,7 @@
               :type="activeIndex - 2"
             ></exam-edit>
           </el-col>
-          <el-col v-if="activeIndex > '4'" :span="17" :offset="1">
+          <el-col v-if="activeIndex > '4' && activeIndex < '7'" :span="17" :offset="1">
             <pres-edit
               :medical_record_id="medicalRecord.id"
               @apply="applyPresTemplate"
@@ -257,6 +257,7 @@
               :type="activeIndex - 5"
             ></pres-edit>
           </el-col>
+
         </el-row>
 
       </div>
@@ -331,7 +332,7 @@
         previewIsTemplate: false,
         medicalRecordPreview: {},
         preview: false,
-        templateName: '王静怡修改滚动条',
+        templateName: '',
         creatingTemplate: false,
         defaultProps: {
           children: 'children',
@@ -734,7 +735,15 @@
             break
           }
           case '5': {
-            this.getPrescriptionTemplateList()
+            this.getPrescriptionTemplateList(0)
+            this.preview = false
+            this.creatingTemplate = false
+            this.previewIsTemplate = false
+            this.isExamTemplate = false
+            break
+          }
+          case '6': {
+            this.getPrescriptionTemplateList(1)
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
@@ -875,8 +884,8 @@
         }
         return temp
       },
-      getPrescriptionTemplateList(){
-        listPresTemplateList({type:this.prescriptionType}).then(res=>{
+      getPrescriptionTemplateList(type){
+        listPresTemplateList({type}).then(res=>{
           this.templateClasses2[0].children = []
           this.templateClasses2[1].children = []
           this.templateClasses2[2].children = []

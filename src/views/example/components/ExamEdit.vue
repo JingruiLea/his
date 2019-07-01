@@ -94,7 +94,8 @@
     },
     watch:{
       type(){
-        this.getExam()
+        if(this.medical_record_id)
+          this.getExam()
       }
     },
     methods:{
