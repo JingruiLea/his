@@ -7,3 +7,10 @@ export function getClassification(data) {
     data
   })
 }
+export function getAll(data) {
+  return request({
+    url: '/departmentManage/getAll',
+    method: 'post',
+    data
+  })
+}

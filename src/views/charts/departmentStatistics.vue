@@ -1,7 +1,10 @@
 <template>
-  <div>
-    <el-row class="demo-input-suffix">
-      <el-col :span="10">
+  <div class="app-container">
+    <el-row class="title">
+      执行科室工作量统计
+    </el-row>
+    <el-row class="demo-input-suffix" :offset="1">
+      <el-col :span="3"  :offset="2">
         <el-select @change="handleFilter" v-model="tempDepartment.id" placeholder="请选择科室" class="filter-item" style="width: 10em">
           <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
         </el-select>
@@ -27,13 +30,17 @@ import echarts from 'echarts'
 <script>
   import echarts from "echarts";
   import ElContainer from "../../../node_modules/element-ui/packages/container/src/main.vue";
-  import {getClassification} from '@/api/department-statistics'
+  import {getClassification,getAll} from '@/api/department-statistics'
 
   export default {
     components: {ElContainer},
     data(){
       return {
-        tempDepartment: null,
+        listLoading: true,
+        tempDepartment: {
+          id:1,
+          name:"心血管内科"
+        },
         departments: null,
          option:{
           xAxis: {
@@ -47,7 +54,7 @@ import echarts from 'echarts'
           series: [{
             data: [1,200,223],
             type: 'bar',
-            barWidth: 10
+            barWidth: 15
           }]
         },
         chart:{},
@@ -59,6 +66,22 @@ import echarts from 'echarts'
       }
     },
     methods:{
+      handleFilter(){},
+      getDepartments(){
+        this.listLoading = true
+        getAll().then(response => {
+          const {data} = response
+          const {department, department_classification} = data
+          bus.departments = department
+          this.list = department
+          this.fullList = this.list
+          this.total = department.length
+          // Just to simulate the time of the request
+          setTimeout(() => {
+            this.listLoading = false
+          }, 1.5 * 1000)
+        })
+      },
       initChart(){
         this.chart = echarts.init(this.$refs['charts1'])
         this.chart.setOption(this.option)
@@ -86,6 +109,24 @@ import echarts from 'echarts'
         this.initChart()
       }
     },
+    computed:{
+      departments(){
+        return bus.departments
+      }
+    },
+    created(){
+      this.getDepartments()
+    }
   }
 </script>
-<style></style>
+
+<style>
+  .app-container{
+    margin-top: 5px;
+  }
+  .title{
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+</style>
