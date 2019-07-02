@@ -161,7 +161,7 @@
   }, {})
 
   export default {
-    name: 'CopyComplexTable',
+    name: 'DiseaseDirectory',
     components: { Pagination },
     directives: { waves },
     filters: {

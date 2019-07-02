@@ -29,6 +29,18 @@ const chartsRouter = {
       component: () => import('@/views/charts/mix-chart'),
       name: 'MixChart',
       meta: { title: 'Mix Chart', noCache: true }
+    },
+    {
+      path: 'departmentStatistics',
+      component: () => import('@/views/charts/departmentStatistics'),
+      name: 'departmentStatistics',
+      meta: { title: '科室工作量统计', noCache: true }
+    },
+    {
+      path: 'personalStatistics',
+      component: () => import('@/views/charts/personalStatistics'),
+      name: 'personalStatistics',
+      meta: { title: '个人工作量统计', noCache: true }
     }
   ]
 }
