@@ -29,7 +29,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="模板名称" prop="title">
-        <el-input :readonly="hasSubmit" type="text" v-model="diagnose.title"></el-input>
+        <el-input  type="text" v-model="diagnose.title"></el-input>
       </el-form-item>
     </div>
     </el-form>

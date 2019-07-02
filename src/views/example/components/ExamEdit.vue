@@ -71,7 +71,7 @@
 
 <script>
   import {list as listExam, create as createExam, update as updateExam,send as sendExam, _delete as deleteExam, detail as detailExam} from '@/api/exam'
-  import {create as createTemplate} from '@/api/examTemplate'
+  import {create as createTemplate, update as updateTemplate} from '@/api/examTemplate'
 
 
 

@@ -24,6 +24,7 @@
       <div></div>
     </el-aside>
     <el-main>
+      {{`正在看诊:${registrationInfo.patient_name}, 病历号${this.medicalRecord.id}`}}
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
         <el-tab-pane label="初步诊断" name="1"></el-tab-pane>
@@ -299,7 +300,7 @@
         pres:{
           template_name:'处方模板',
           display_type:0,
-          type:0,
+          type: this.activeIndex - 5,
           medical_record_id:0,
           items:[]
         },
@@ -307,7 +308,7 @@
         exam:{
           template_name:'检查模板',
           display_type:0,
-          type:0,
+          type:this.activeIndex - 2,
           medical_record_id:0,
           non_drug_id_list:[],
           nonDrugs:[]
@@ -874,6 +875,7 @@
       },
       templateToExam(res){
         let temp = {
+          id : res.id,
           nonDrugs:[],
           medical_record_id:res.medical_record_id,
           template_name:res.template_name,
@@ -886,7 +888,7 @@
         return temp
       },
       getPrescriptionTemplateList(type){
-        listPresTemplateList({type}).then(res=>{
+        listPresTemplateList({type:type?type:this.activeIndex - 5}).then(res=>{
           this.templateClasses2[0].children = []
           this.templateClasses2[1].children = []
           this.templateClasses2[2].children = []
@@ -956,15 +958,11 @@
   .asider-item {
     text-align: center;
     padding-top: 0.7em;
-    /*border-bottom: 1px solid rgb(192, 192, 192);*/
     vertical-align: center;
   }
 
-  .asider-item:hover {
-    text-align: center;
+  .asider-item .cell:hover {
     padding-top: 0.7em;
-    /*border-bottom: 1px solid rgb(192, 192, 192);*/
-    vertical-align: center;
     cursor: pointer;
   }
 
@@ -974,7 +972,7 @@
   }
 
   .asider-item .cell {
-    text-align: center;
+    padding-left: 4em;
     padding-top: 0.7em;
     /*border-bottom: 1px solid rgb(192, 192, 192);*/
     vertical-align: center;

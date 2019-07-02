@@ -32,9 +32,9 @@ export function charge(data) {
   })
 }
 
-export function withdraw(data) {
+export function update(data) {
   return request({
-    url: '/outpatientCharge/withdraw',
+    url: '/examTemplate/update',
     method: 'post',
     data
   })

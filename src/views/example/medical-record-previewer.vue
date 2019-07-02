@@ -78,6 +78,7 @@
       },
       onApply(){
         this.$emit('apply')
+        this.$emit('fresh')
       },
       onDelete(){
         _delete({idArr:[this.medicalRecord.id]}).then(res=>{

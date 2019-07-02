@@ -165,6 +165,7 @@
       },
       examToSubmit(){
         let res = JSON.parse(JSON.stringify(this.pres))
+        res.type = this.type
         res.drug_id_list  = res.items
         for(let i of res.items){
           i.drug_id = i.drug.id

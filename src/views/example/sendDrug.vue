@@ -1,11 +1,20 @@
 <template>
     <el-row>
-      <el-col :span="8">
+      <el-col :span="10">
         <el-table
           :data="list"
           height="calc(100vh - 70px)"
           @row-click="detailPres"
         >
+          <el-table-column
+            label="病历号"
+            prop="name"
+            align="center"
+          >
+            <template slot-scope="{row}">
+              {{row.registration.medical_record_id}}
+            </template>
+          </el-table-column>
           <el-table-column
             label="患者姓名"
             prop="name"
@@ -23,7 +32,7 @@
           </el-table-column>
         </el-table>
       </el-col>
-      <el-col :span="16">
+      <el-col :span="14">
         <el-table
           :data="presList"
           height="calc(100vh - 70px)"
@@ -135,7 +144,8 @@
           res.data.forEach(pres=>{
             selectById({id:pres.medical_record_id}).then(res=>{
                 pres.registration = res.data
-                if(!this.list.find(o=>o.medical_record_id == pres.medical_record_id)){
+                if(res.data == null) return
+                if(!this.list.find(o => o.medical_record_id == pres.medical_record_id)){
                   this.list.push(pres)
                 }
               })
