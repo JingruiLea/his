@@ -41,7 +41,7 @@ import echarts from 'echarts'
 <script>
   import echarts from "echarts";
   import ElContainer from "../../../node_modules/element-ui/packages/container/src/main.vue";
-  import {getClassification,getTotal} from '@/api/department-statistics'
+  import {getClassification,getTotal} from '@/api/prescribe-statistics'
   import bus from '@/bus'
   export default {
     components: {ElContainer},
@@ -148,7 +148,7 @@ import echarts from 'echarts'
 </script>
 
 <style>
-.department-asider{
-  background-color: white;
-}
+  .department-asider{
+    background-color: white;
+  }
 </style>

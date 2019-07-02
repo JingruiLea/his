@@ -4,7 +4,7 @@
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-input v-model="listQuery.name" placeholder="登录名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-input v-model="listQuery.real_name" placeholder="姓名" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
-      <el-input v-model="listQuery.department" placeholder="部门" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
+      <el-input v-model="listQuery.department" placeholder="科室" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter(1)" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter(1)">
         查找
       </el-button>
@@ -38,12 +38,12 @@
         type="selection"
         >
       </el-table-column>
-      <el-table-column label="ID" prop="id" sortable="custom" align="center">
+      <el-table-column label="ID" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.uid }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="登录名" prop="id" sortable="custom" align="center">
+      <el-table-column label="登录名" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.username }}</span>
         </template>
@@ -79,7 +79,7 @@
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="!canMultiDelete" size="mini" type="danger" @click="handleDelete">
+          <el-button v-if="!canMultiDelete" size="mini" type="danger" @click="handleDelete(row)">
             删除
           </el-button>
         </template>
@@ -110,15 +110,17 @@
           </el-select>
         </el-form-item>
         <el-form-item label="职位" prop="timestamp">
-          <el-input v-model="temp.title" />
+          <el-select v-model="temp.title" class="filter-item" placeholder="Please select">
+            <el-option v-for="item,index in classes" :key="index" :label="item" :value="item" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          确定
         </el-button>
       </div>
     </el-dialog>
@@ -181,6 +183,9 @@
       roles(){
         return bus.roles
       },
+      classes(){
+        return ["主任医师", "副主任医师", "主治医师", "住院医师"]
+      }
     },
     data() {
       return {
@@ -207,19 +212,19 @@
         temp: {
           username: "admin2",
           password: "12345",
-          real_name: "XUranus",
+          real_name: "admin",
           department_id: 1,
           role_id: 1,
           participate_in_scheduling: true,
-          title: "主任",
+          title: "主任医师",
           role_name: "医院管理员",
           department_name: "神经科"
         },
         dialogFormVisible: false,
         dialogStatus: '',
         textMap: {
-          update: 'Edit',
-          create: 'Create'
+          update: '编辑',
+          create: '新建'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -352,11 +357,11 @@
         this.temp = {
           username: "admin2",
           password: "12345",
-          real_name: "XUranus",
+          real_name: "admin",
           department_id: 1,
           role_id: 1,
           participate_in_scheduling: true,
-          title: "主任",
+          title: "主任医师",
           role_name: "医院管理员",
           department_name: "神经科"
         }
@@ -420,7 +425,7 @@
       },
       handleDelete(row) {
         console.log(`line 354: delete ${row}`)
-        _delete([row.uid]).then(res =>{
+        _delete({data:[row.uid]}).then(res =>{
           this.$notify({
             title: 'Success',
             message: 'Delete Successfully',

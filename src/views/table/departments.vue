@@ -38,12 +38,12 @@
         type="selection"
       >
       </el-table-column>
-      <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="编码" prop="id" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center">
+      <el-table-column label="名称" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
@@ -82,7 +82,10 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="ID" type="number">
-          <el-input v-model="temp.id" />
+          <el-input
+            v-model="temp.id"
+            :disabled="dialogStatus==='create' ? false:true">
+          </el-input>
         </el-form-item>
         <el-form-item label="名称" prop="username">
           <el-input v-model="temp.name" />
@@ -92,7 +95,7 @@
         </el-form-item>
         <el-form-item label="类别" prop="username">
           <el-select v-model="temp.classification_id" class="filter-item" placeholder="Please select">
-            <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
+            <el-option v-for="item,index in departmentClassifications" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="种类" prop="department_id">
@@ -169,6 +172,9 @@
       classes(){
         return ["临床科室", "医技科室", "财务科室", "行政科室"]
       },
+      departmentClassifications(){
+        return bus.departmentClassifications
+      }
     },
     data() {
       return {
@@ -243,7 +249,7 @@
           const {data} = response
           const {department, department_classification} = data
           bus.departments = department
-          bus.department_classification = department_classification
+          bus.departmentClassifications = department_classification
           this.list = department
           this.fullList = this.list
           this.total = department.length
@@ -396,7 +402,7 @@
         })
       },
       handleDelete(row) {
-        console.log(`line 354: delete ${row}`)
+        console.log(`line 399: delete ${row}`)
         _delete({data:[row.id]}).then(res =>{
           this.$notify({
             title: 'Success',

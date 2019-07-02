@@ -34,7 +34,13 @@ const chartsRouter = {
       path: 'departmentStatistics',
       component: () => import('@/views/charts/departmentStatistics'),
       name: 'departmentStatistics',
-      meta: { title: '科室工作量统计', noCache: true }
+      meta: { title: '执行科室工作量统计', noCache: true }
+    },
+    {
+      path: 'prescribeStatistics',
+      component: () => import('@/views/charts/prescribeStatistics'),
+      name: 'prescribeStatistics',
+      meta: { title: '开单科室工作量统计', noCache: true }
     },
     {
       path: 'personalStatistics',

@@ -37,12 +37,12 @@
         type="selection"
       >
       </el-table-column>
-      <el-table-column label="ID" prop="id" sortable="custom" align="center">
+      <el-table-column label="ID" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center">
+      <el-table-column label="名称" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.fee_name }}</span>
         </template>
