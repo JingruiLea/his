@@ -57,3 +57,19 @@ export function search(data) {
     data
   })
 }
+
+export function withdraw(data) {
+  return request({
+    url: '/drugWithdrawal/submit',
+    method: 'post',
+    data
+  })
+}
+
+export function submit(data) {
+  return request({
+    url: '/drugDispense/submit',
+    method: 'post',
+    data
+  })
+}

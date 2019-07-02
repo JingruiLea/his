@@ -146,6 +146,32 @@ export const constantRoutes = [
         meta: { title: '门诊病历首页', icon: 'guide', noCache: true }
       }
     ]
+  },
+  {
+    path: '/examRegistration',
+    component: Layout,
+    redirect: '/guide/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/example/examRegistration'),
+        name: '检查检验登记',
+        meta: { title: '检查检验登记', icon: 'guide', noCache: true }
+      }
+    ]
+  },
+  {
+    path: '/sendDrug',
+    component: Layout,
+    redirect: '/guide/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/example/sendDrug'),
+        name: '门诊药房',
+        meta: { title: '门诊药房', icon: 'guide', noCache: true }
+      }
+    ]
   }
 ]
 
