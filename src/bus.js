@@ -26,6 +26,7 @@ let bus = new Vue({
       getUsers().then(res=>{
         this.roles = res.data.roles
         this.users = res.data.users
+        this.$emit('getUsers')
         this.departments = res.data.departments
       })
     },
@@ -33,6 +34,7 @@ let bus = new Vue({
       getDepartments().then(res=>{
         this.departmentClassifications = res.data.department_classification
         this.departments = res.data.department
+        this.$emit('getDepartments')
       })
     },
     getMainDiagnose(medicalRecord){
@@ -52,17 +54,21 @@ let bus = new Vue({
     getSettlementCategorys(){
       getSettlementCategorys().then(res=>{
         this.settlementCategorys = res.data
+        this.$emit('getSettlementCategorys')
       })
     },
     getRegistrationLevel(){
       getRegistrationLevel().then(res=>{
         this.registrationLevels = res.data
+        this.$emit('getRegistrationLevel')
       })
     },
     getDiseaseClassifications() {
       getDiseaseClassifications().then(res => {
         this.diseaseClassifications = res.data
+        this.$emit('getDiseaseClassifications')
       })
+
     }
   },
   created(){

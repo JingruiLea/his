@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getClassification(data) {
   return request({
-    url: '/statistics/getFeeName',
+    url: '/statistics/statisticsByUser',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function getClassification(data) {
 
 export function getTotal(data) {
   return request({
-    url: '/statistics/getTotal',
+    url: '/statistics/getTotalUser',
     method: 'post',
     data
   })

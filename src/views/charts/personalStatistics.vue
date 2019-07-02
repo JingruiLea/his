@@ -1,6 +1,6 @@
 <template>
-  <el-container class="department-container">
-    <el-aside width="400px" class="department-asider">
+  <el-container class="user-container">
+    <el-aside width="400px" class="user-asider">
       <el-date-picker
         v-model="collectDate"
         type="daterange"
@@ -16,12 +16,12 @@
         :data="list"
         style="width: 100%">
         <el-table-column
-          prop="department_id"
-          label="科室ID">
+          prop="user_id"
+          label="医生ID">
         </el-table-column>
         <el-table-column
-          prop="department_name"
-          label="科室名称">
+          prop="user_name"
+          label="医生姓名">
         </el-table-column>
         <el-table-column
           prop="total"
@@ -41,7 +41,7 @@ import echarts from 'echarts'
 <script>
   import echarts from "echarts";
   import ElContainer from "../../../node_modules/element-ui/packages/container/src/main.vue";
-  import {getClassification,getTotal} from '@/api/department-statistics'
+  import {getClassification,getTotal} from '@/api/personal-statistics'
   import bus from '@/bus'
   export default {
     components: {ElContainer},
@@ -51,9 +51,9 @@ import echarts from 'echarts'
         fullList: null,
         total: null,
         listLoading: true,
-        tempDepartment: {
-          id:1,
-          name:"心血管内科"
+        tempUser: {
+          id:10000,
+          name:"HospitalAdmin"
         },
         option:{
           xAxis: {
@@ -81,13 +81,12 @@ import echarts from 'echarts'
           '2019-06-26 00:00:00',
           '2019-06-27 00:00:00'
         ],
-        department_id:1
+        user_id:1
       }
     },
     methods:{
       handleCurrentChange(val){
-        this.department_id = parseInt(val.department_id)
-        console.log(this.department_id)
+        this.user_id = parseInt(val.user_id)
         this.initChart()
       },
       getList(){
@@ -96,10 +95,10 @@ import echarts from 'echarts'
           this.list = []
           for(let i in data){
             let temp = {}
-            console.log('000',this.departments.find(o=>o.id==parseInt(1)))
-            temp.department_name = this.departments.find(o=>o.id==parseInt(i)).name
-            temp.department_id = i
-            temp.total = data[i]
+            console.log('000',this.users.find(o=>o.uid==parseInt(1)))
+            temp.user_name = this.users.find(o=>o.uid==parseInt(i)).username
+            temp.user_id = i
+            temp.total = data[i].toFixed(2)
             this.list.push(temp)
           }
         })
@@ -108,7 +107,7 @@ import echarts from 'echarts'
       initChart(){
         this.chart = echarts.init(this.$refs['charts1'])
         this.chart.setOption(this.option)
-        getClassification({start_time:this.collectDate[0],end_time:this.collectDate[1],department_id:this.department_id}).then(response =>{
+        getClassification({start_time:this.collectDate[0],end_time:this.collectDate[1],user_id:this.user_id}).then(response =>{
           const {data} = response
           const {xAxis,series} = data
           this.option.xAxis.data = []
@@ -116,7 +115,7 @@ import echarts from 'echarts'
           console.log(series)
           for(let i=0; i<xAxis.length; i++){
             this.option.xAxis.data.push(xAxis[i])
-            this.option.series[0].data.push(series[xAxis[i]] ? series[xAxis[i]] : 0 )
+            this.option.series[0].data.push(series[xAxis[i]] ? series[xAxis[i]].toFixed(2) : 0 )
           }
 
           this.chart.setOption(this.option)
@@ -124,9 +123,9 @@ import echarts from 'echarts'
       }
     },
     mounted(){
-      bus.$on('getDepartments',()=>this.getList())
-      if(bus.departments.length == 0){
-        bus.getDepartments()
+      bus.$on('getUsers',()=>this.getList())
+      if(bus.users.length == 0){
+        bus.getUsers()
       }else {
         this.getList()
       }
@@ -140,15 +139,15 @@ import echarts from 'echarts'
       }
     },
     computed:{
-      departments(){
-        return bus.departments
+      users(){
+        return bus.users
       }
     }
   }
 </script>
 
 <style>
-.department-asider{
-  background-color: white;
-}
+  .user-asider{
+    background-color: white;
+  }
 </style>
