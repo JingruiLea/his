@@ -47,6 +47,18 @@ const chartsRouter = {
       component: () => import('@/views/charts/personalStatistics'),
       name: 'personalStatistics',
       meta: { title: '个人工作量统计', noCache: true }
+    },
+    {
+      path: 'doctorStatistics',
+      component: () => import('@/views/charts/doctorStatistics'),
+      name: 'doctorStatistics',
+      meta: { title: '门诊医生个人工作量统计', noCache: true }
+    },
+    {
+      path: 'techStatistics',
+      component: () => import('@/views/charts/techStatistics'),
+      name: 'techStatistics',
+      meta: { title: '医技医生个人工作量统计', noCache: true }
     }
   ]
 }

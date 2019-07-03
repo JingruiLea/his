@@ -106,10 +106,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          确认
         </el-button>
       </div>
     </el-dialog>
@@ -253,15 +253,7 @@
           this.list = department
           this.fullList = this.list
           this.total = department.length
-          this.listQuery = {
-            page: 1,
-            limit: 20,
-            classification_name: undefined,
-            id: undefined,
-            type: undefined,
-            name: undefined,
-            sort: '+id'
-          }
+          this.listQuery.page=1
           this.handleFilter();
 
           // Just to simulate the time of the request

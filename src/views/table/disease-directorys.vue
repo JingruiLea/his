@@ -22,9 +22,12 @@
       </el-checkbox>
     </div>
 
-    <el-select @change="handleChange" filterable v-model="tempClassification.id" placeholder="选择类型" class="filter-item" style="width: 10em">
-      <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
-    </el-select>
+    <el-row>
+        诊断目录分类：
+      <el-select @change="handleChange" filterable v-model="tempClassification.id" placeholder="选择类型" class="filter-item" style="width: 10em">
+        <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
+      </el-select>
+    </el-row>
 
     <el-table
       :key="tableKey"
@@ -42,7 +45,7 @@
         type="selection"
       >
       </el-table-column>
-      <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
+      <el-table-column label="编码" prop="id" align="center" width="100">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -52,7 +55,7 @@
           <span>{{ row.code }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="名称" prop="id" sortable="custom" align="center">
+      <el-table-column label="名称" prop="id" align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
@@ -96,7 +99,10 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
         <el-form-item label="编码" type="number">
-          <el-input v-model="temp.id" />
+          <el-input
+            v-model="temp.id"
+            :disabled="dialogStatus==='create' ? false:true">
+          </el-input>
         </el-form-item>
         <el-form-item label="名称" prop="username">
           <el-input v-model="temp.name" />
@@ -118,10 +124,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          确认
         </el-button>
       </div>
     </el-dialog>
@@ -146,6 +152,7 @@
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
   import fuzzyQuery from '@/utils/utils'
+  import ElRow from "element-ui/packages/row/src/row";
 
   const calendarTypeOptions = [
     { key: 'CN', display_name: 'China' },
@@ -162,7 +169,9 @@
 
   export default {
     name: 'DiseaseDirectory',
-    components: { Pagination },
+    components: {
+      ElRow,
+      Pagination },
     directives: { waves },
     filters: {
       statusFilter(status) {
