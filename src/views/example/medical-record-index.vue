@@ -176,7 +176,7 @@
                 <el-button type="danger" size="mini" @click="resetMedicalRecord" :disabled="hasSubmit">清空</el-button>
                 <el-button type="primary" size="mini" @click="saveMedicalRecordTemplate">生成模板</el-button>
                 <el-button type="primary" size="mini" @click="tempSave" :disabled="hasSubmit">暂存</el-button>
-                <el-button type="success" size="mini" @click="next" :disabled="hasSubmit">提交</el-button>
+                <el-button type="success" size="mini" @click="onDiagnoseNext" :disabled="hasSubmit">提交</el-button>
               </div>
               <div v-else>
                 <el-button type="success" size="mini" @click="saveMedicalRecordTemplate">提交模板</el-button>
@@ -223,7 +223,7 @@
           <el-col v-if="activeIndex == '1' || activeIndex=='7'" :span="12" :offset="1">
             <diagnose-edit
               @tempSave="onDiagnoseTempSave"
-              @next="onDiagnoseNext"
+              @next="next"
               @apply="applyDiagnoseTemplate"
               @back="isDiagnoseTemplate = false"
               :template.sync="isDiagnoseTemplate"

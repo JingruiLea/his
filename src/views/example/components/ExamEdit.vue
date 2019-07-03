@@ -100,7 +100,9 @@
     },
     methods:{
       removeExam(row) {
-        this.exam.nonDrugs = this.exam.nonDrugs.filter(i=>i.id!=row.id)
+        let temp = JSON.parse(JSON.stringify(this.exam))
+        temp.nonDrugs = this.exam.nonDrugs.filter(i=>i.id!=row.id)
+        this.$emit('update:exam', temp)
       },
       reset(){
         this.$emit('update:exam', JSON.parse(JSON.stringify(this.initExam)))
@@ -162,6 +164,7 @@
       },
       backFromCreatingTemplate(){
         if(this.hasSubmit){
+          this.savedExam = this.exam.id
           this.$emit('update:exam', JSON.parse(JSON.stringify(this.savedExam)))
         }
         this.creatingTemplate = false
@@ -207,6 +210,7 @@
         return temp
       },
       getExam(){
+        this.$emit('update:exam', this.initExam)
         listExam({medical_record_id:this.medical_record_id,type:this.type}).then(res=>{
           if(res.data.length > 0){
             this.$emit('update:exam', this.templateToExam(res.data[0]))
@@ -217,7 +221,7 @@
               type:this.type
             }).then(res=>{
               let temp = JSON.parse(JSON.stringify(this.exam))
-              temp.id = res.id
+              temp.id = res.data.id
               this.$emit('update:exam', temp)
             })
           }

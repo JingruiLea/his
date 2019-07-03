@@ -12,7 +12,7 @@
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         Search
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
@@ -175,7 +175,7 @@
         return ["临床科室", "医技科室", "财务科室", "行政科室"]
       },
       retail_fee(){
-        let temp = this.truely_pay - this.should_pay
+        let temp = new Number(this.truely_pay - this.should_pay).toFixed(2)
         return temp < 0 ? '无效金额' : temp
       }
     },

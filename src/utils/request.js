@@ -11,13 +11,12 @@ const service = axios.create({
 })
 // request interceptor
 service.interceptors.request.use(
-  config => {
+  req => {
     // do something before request is sent
-    if(config.data){
-      config.data._uid = parseInt(getToken())
-    }
-    else{
-      config.data = {
+    if(req.data){
+      req.data._uid = parseInt(getToken())
+    } else{
+      req.data = {
         '_uid' :  parseInt(getToken())
       }
     }
@@ -27,7 +26,7 @@ service.interceptors.request.use(
     //   // please modify it according to the actual situation
     //   config.headers['X-Token'] = getToken()
     // }
-    return config
+    return req
   },
   error => {
     // do something with request error

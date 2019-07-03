@@ -55,3 +55,19 @@ export function send(data) {
     data
   })
 }
+
+export function dispense(data) {
+  return request({
+    url: '/drugDispense/submit',
+    method: 'post',
+    data
+  })
+}
+
+export function withdraw(data) {
+  return request({
+    url: '/drugWithdrawal/submit',
+    method: 'post',
+    data
+  })
+}

@@ -56,6 +56,13 @@ export function list(data) {
   })
 }
 
+export function listPaid(data) {
+  return request({
+    url: '/exam/listPaid',
+    method: 'post',
+    data
+  })
+}
 
 export function detail(data) {
   return request({

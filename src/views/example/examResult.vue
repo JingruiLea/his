@@ -6,7 +6,7 @@
       <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
         <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
       </el-select>
-      <el-select v-model="type" placeholder="类型" clearable class="filter-item" style="width: 130px">
+      <el-select v-model="type" placeholder="类型" class="filter-item" style="width: 130px">
         <el-option v-for="item,index in [[`检查`,0],[`检验`,1],[`处置`,2]]" :key="index" :label="item[0]" :value="item[1]" />
       </el-select>
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
@@ -74,7 +74,7 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="录入结果所见" type="number">
+        <el-form-item label="结果所见" type="number">
           <el-input :readonly="dialogStatus =='create'" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="someInfo.result" />
         </el-form-item>
         <el-form-item label="处理意见" type="number">
@@ -90,6 +90,7 @@
             :data="someInfo"
             class="upload-demo"
             ref="upload"
+            :on-success="onSuccess"
             :action="`http://${location}:8080/exam/submitResult`"
             :on-preview="handlePreview"
             :on-remove="handleRemove"
@@ -124,7 +125,7 @@
 <script>
   import {withdraw, charge, getChargeItems, getHistoryChargeItems } from '@/api/outpationCharge'
   import {getAll, add, _delete} from '@/api/departments'
-  import {list as listByType, getResult} from '@/api/exam'
+  import {listPaid as listByType, getResult} from '@/api/exam'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -214,7 +215,7 @@
         dialogStatus: '',
         textMap: {
           update: '检查结果录入',
-          create: 'Create'
+          create: '检查检验结果查看'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -236,13 +237,16 @@
       this.getList()
     },
     methods: {
-      submitUpload() {
-        this.$refs.upload.submit();
-        this.dialogFormVisible = false
+      onSuccess(){
+        this.getList()
         this.$message({
           message: '提交成功！',
           type: 'success'
         })
+      },
+      submitUpload() {
+        this.$refs.upload.submit();
+        this.dialogFormVisible = false
       },
       handlePreview(){},
       handleRemove(){},

@@ -230,7 +230,7 @@
         driver: null,
         temp: {
           address : "沈阳市东北大学",
-          age : 17,
+          age : 21,
           birthday : "1998.03.23",
           consultation_date: "2019.10.2",
           department_id: 1,
