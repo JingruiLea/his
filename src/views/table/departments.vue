@@ -232,8 +232,8 @@
         })
         _delete({data:data}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })
@@ -308,7 +308,7 @@
       },
       handleModifyStatus(row, status) {
         this.$message({
-          message: '操作Success',
+          message: '操作成功',
           type: 'success'
         })
         row.status = status
@@ -349,8 +349,8 @@
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
           this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
+            title: '成功',
+            message: '创建成功',
             type: 'success',
             duration: 2000
           })
@@ -383,8 +383,8 @@
               }
               this.dialogFormVisible = false
               this.$notify({
-                title: 'Success',
-                message: 'Update Successfully',
+                title: '成功',
+                message: '更新成功',
                 type: 'success',
                 duration: 2000
               })
@@ -397,8 +397,8 @@
         console.log(`line 399: delete ${row}`)
         _delete({data:[row.id]}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })
