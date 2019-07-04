@@ -1,29 +1,5 @@
 import request from '@/utils/request'
 
-export function all(data) {
-  return request({
-    url: '/exam/allItems',
-    method: 'post',
-    data
-  })
-}
-
-export function getResult(data) {
-  return request({
-    url: '/exam/getResult',
-    method: 'post',
-    data
-  })
-}
-
-export function allExam(data) {
-  return request({
-    url: '/examExcute/allExam',
-    method: 'post',
-    data
-  })
-}
-
 export function create(data) {
   return request({
     url: '/exam/create',
@@ -50,15 +26,15 @@ export function _delete(data) {
 
 export function list(data) {
   return request({
-    url: '/exam/list',
+    url: '/drugWithdrawal/list',
     method: 'post',
     data
   })
 }
 
-export function listPaid(data) {
+export function all(data) {
   return request({
-    url: '/exam/listPaid',
+    url: '/prescription/all',
     method: 'post',
     data
   })
@@ -80,17 +56,17 @@ export function send(data) {
   })
 }
 
-export function register(data) {
+export function dispense(data) {
   return request({
-    url: '/exam/register',
+    url: '/drugDispense/submit',
     method: 'post',
     data
   })
 }
 
-export function cancel(data) {
+export function withdraw(data) {
   return request({
-    url: '/exam/cancel',
+    url: '/drugWithdrawal/submit',
     method: 'post',
     data
   })

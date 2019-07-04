@@ -8,6 +8,14 @@ export function getPatientList(data) {
   })
 }
 
+export function end(data) {
+  return request({
+    url: '/medicalRecord/end',
+    method: 'post',
+    data
+  })
+}
+
 export function getMedicalRecord(data) {
   return request({
     url: '/medicalRecord/getMedicalRecord',
@@ -37,6 +45,13 @@ export function saveMedicalRecord(data) {
   })
 }
 export function confirmMedicalRecord(data) {
+  return request({
+    url: '/medicalRecord/confirmMedicalRecord',
+    method: 'post',
+    data
+  })
+}
+export function registrationInfo(data) {
   return request({
     url: '/medicalRecord/confirmMedicalRecord',
     method: 'post',

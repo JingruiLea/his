@@ -78,6 +78,7 @@
       },
       onApply(){
         this.$emit('apply')
+        this.$emit('fresh')
       },
       onDelete(){
         _delete({idArr:[this.medicalRecord.id]}).then(res=>{
@@ -87,6 +88,7 @@
             type: 'success',
             duration: 2000
           })
+          this.$emit('fresh')
           this.goBack()
         })
       },

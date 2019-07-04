@@ -58,7 +58,7 @@
           <span>{{ row.role_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="是否排班" prop="id" align="center" >
+      <el-table-column label="是否排班" prop="id" width="70px" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.participate_in_scheduling ? '是' : '否' }}</span>
         </template>

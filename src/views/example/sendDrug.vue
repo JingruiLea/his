@@ -3,17 +3,17 @@
     <div class="filter-container">
       <el-input v-model="medicalRecordId" placeholder="病历号" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
       <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
+      <el-select v-model="listQuery.importance" placeholder="状态" clearable style="width: 90px" class="filter-item">
         <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-select v-model="type" placeholder="类型" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item,index in [[`检查`,0],[`检验`,1],[`处置`,2]]" :key="index" :label="item[0]" :value="item[1]" />
       </el-select>
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
       </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        Search
+        搜索
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         新增
@@ -38,37 +38,27 @@
     >
       <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
-          <span>{{ row.id }}</span>
+          <span>{{ row.drug.id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="名称" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
+          <span>{{ row.drug.name }}</span>
         </template>
       </el-table-column>
       <el-table-column label="单价" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.fee }}</span>
+          <span>{{ row.drug.price }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数量" prop="id"  align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.quantity }}</span>
+          <span>{{ row.amount }}</span>
         </template>
       </el-table-column>
       <el-table-column label="价格" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.fee * row.quantity}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="开立医生" prop="id" align="center" >
-        <template slot-scope="{row}">
-          <span>{{ users.find(i=>i.uid == row.create_user_id).real_name}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="开立时间" prop="id" align="center" >
-        <template slot-scope="{row}">
-          <span>{{ row.create_time}}</span>
+          <span>{{ row.drug.price * row.amount }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="id" align="center" >
@@ -79,11 +69,11 @@
 
       <el-table-column label="Actions" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button v-if="row.status=='未缴费'" type="primary" :disabled="row.status=='已退费'" size="mini" @click="handleUpdate(row)">
-            缴费
+          <el-button v-if="row.status=='未取药'" type="primary" :disabled="row.status=='已取消'" size="mini" @click="dispense(row)">
+            取药
           </el-button>
-          <el-button v-else type="danger" :disabled="row.status=='已退费'" size="mini" @click="handleDelete(row)">
-            退费
+          <el-button v-else type="danger" :disabled="row.status=='已退药'" size="mini" @click="withdraw(row)">
+            退药
           </el-button>
         </template>
       </el-table-column>
@@ -126,26 +116,11 @@
 </template>
 
 <script>
-  import {withdraw, charge, getChargeItems, getHistoryChargeItems } from '@/api/outpationCharge'
-  import {getAll, add, _delete} from '@/api/departments'
+  import {list, dispense, withdraw} from '@/api/drugSend'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
-  import fuzzyQuery from '@/utils/utils'
-
-  const calendarTypeOptions = [
-    { key: 'CN', display_name: 'China' },
-    { key: 'US', display_name: 'USA' },
-    { key: 'JP', display_name: 'Japan' },
-    { key: 'EU', display_name: 'Eurozone' }
-  ]
-
-  // arr to obj, such as { CN : "China", US : "USA" }
-  const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-    acc[cur.key] = cur.display_name
-    return acc
-  }, {})
 
   export default {
     name: 'CopyComplexTable',
@@ -175,12 +150,13 @@
         return ["临床科室", "医技科室", "财务科室", "行政科室"]
       },
       retail_fee(){
-        let temp = new Number(this.truely_pay - this.should_pay).toFixed(2)
+        let temp = this.truely_pay - this.should_pay
         return temp < 0 ? '无效金额' : temp
       }
     },
     data() {
       return {
+        type:0,
         tableKey: 0,
         medicalRecordId: 20000017,
         list: null,
@@ -197,7 +173,6 @@
           sort: '+id'
         },
         importanceOptions: [1, 2, 3],
-        calendarTypeOptions,
         sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
@@ -235,11 +210,18 @@
     methods: {
       getList() {
         let medical_record_id = parseInt(this.medicalRecordId)
-        getHistoryChargeItems({medical_record_id}).then(response => {
-          const {data} = response
-          this.list = data
+        list({medical_record_id}).then(res=>{
+          this.list = []
+          for(let pres of res.data){
+            pres.items.filter(ele=>ele.status == '未取药' || ele.status == '已取药').forEach(e=>{
+                if(!this.list.find(item=>e.id == item.id)){
+                  this.list.push(e)
+                }
+            })
+          }
           this.fullList = this.list
-          this.total = data.length
+          this.total = this.list.length
+          console.log(this.list)
         })
       },
       handleFilter() {
@@ -325,6 +307,33 @@
         })
         //})
 
+      },
+      withdraw(row){
+        let temp = JSON.parse(JSON.stringify(row))
+        temp.drug = undefined
+        withdraw({prescription_items:[temp]}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '退药成功!',
+            type: 'success',
+            duration: 2000
+          })
+          row.status = '已退药'
+        })
+      },
+      dispense(row){
+        let temp = JSON.parse(JSON.stringify(row))
+        let prescription_item_id = []
+        prescription_item_id.push(temp.id)
+        dispense({prescription_item_id}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '发药成功!',
+            type: 'success',
+            duration: 2000
+          })
+          row.status = '已发药'
+        })
       },
       handleUpdate(row) {
         this.temp = Object.assign({}, row) // copy obj

@@ -1,8 +1,8 @@
 import request from '@/utils/request'
 
-export function list(data) {
+export function all(data) {
   return request({
-    url: '/examTemplate/all',
+    url: '/prescription/allPrescription',
     method: 'post',
     data
   })
@@ -10,23 +10,32 @@ export function list(data) {
 
 export function create(data) {
   return request({
-    url: '/examTemplate/create',
+    url: '/prescription/create',
     method: 'post',
     data
   })
 }
 
-export function getHistoryChargeItems(data) {
+export function _delete(data) {
   return request({
-    url: '/outpatientCharge/getHistoryChargeItems',
+    url: '/exam/delete',
     method: 'post',
     data
   })
 }
 
-export function charge(data) {
+export function list(data) {
   return request({
-    url: '/outpatientCharge/charge',
+    url: '/exam/list',
+    method: 'post',
+    data
+  })
+}
+
+
+export function detail(data) {
+  return request({
+    url: '/prescription/detail',
     method: 'post',
     data
   })
@@ -34,14 +43,15 @@ export function charge(data) {
 
 export function update(data) {
   return request({
-    url: '/examTemplate/update',
+    url: '/prescription/update',
     method: 'post',
     data
   })
 }
-export function _delete(data) {
+
+export function submit(data) {
   return request({
-    url: '/examTemplate/delete',
+    url: '/prescription/submit',
     method: 'post',
     data
   })

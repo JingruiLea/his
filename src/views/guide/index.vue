@@ -230,7 +230,7 @@
         driver: null,
         temp: {
           address : "沈阳市东北大学",
-          age : 17,
+          age : 21,
           birthday : "1998.03.23",
           consultation_date: "2019.10.2",
           department_id: 1,
@@ -307,6 +307,9 @@
         outpatientDoctors:undefined
       }
     },
+    watch:{
+
+    },
     created() {
       if(bus.departments.length == 0){
         bus.getDepartments()
@@ -318,6 +321,7 @@
         bus.getRegistrationLevel()
       }
       this.getDoctorList()
+      this.computeCost()
     },
     methods: {
       handleFilter(){
@@ -393,10 +397,17 @@
             this.temp.truely_pay = this.truely_pay
             this.temp.retail_fee = this.retail_fee
             this.temp.should_pay = this.should_pay
+            if(this.retail_fee == "金额无效"){
+              this.$message.error('数据填写错误!')
+              return
+            }
             confirm(this.temp).then(res => {
-              if(this.retail_fee == "金额无效"){
-                this.$message.error('数据填写错误!')
-              }
+              this.$notify({
+                title: 'Success',
+                message: '提交成功!',
+                type: 'success',
+                duration: 2000
+              })
             })
           }
         })

@@ -17,6 +17,7 @@
             v-model="examQuery.name"
             size="mini"
             placeholder="查询检查"
+            @focus="onFocus"
           ></el-input>
         </template>
       </el-table-column>
@@ -28,23 +29,40 @@
   import {all} from '@/api/exam'
 
   export default {
-    props:{
-      templateHeight: String,
-    },
+    props:['templateHeight','type'],
     data(){
       return{
-        exams:[],
+        allExams:[],
         examQuery:{
           name:''
         }
       }
     },
+    watch:{
+      type(){
+        this.getList()
+      }
+    },
+    computed:{
+      exams(){
+        let temp = this.allExams
+        if(this.examQuery.name){
+          temp = temp.filter(ele=>{return ele.name.includes(this.examQuery.name)})
+        }
+        return temp
+      }
+    },
     methods:{
-      onExamClick(){},
+      onExamClick(row){
+        this.$emit('exam-click', row)
+      },
       getList(){
-        all({type:0}).then(res=>{
-          this.exams = res.data
+        all({type:this.type}).then(res=>{
+          this.allExams = res.data
         })
+      },
+      onFocus(){
+        this.$emit('update:templateHeight', '5')
       }
     },
     created(){

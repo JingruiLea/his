@@ -6,8 +6,8 @@
       <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
         <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-select v-model="type" placeholder="类型" class="filter-item" style="width: 130px">
+        <el-option v-for="item,index in [[`检查`,0],[`检验`,1],[`处置`,2]]" :key="index" :label="item[0]" :value="item[1]" />
       </el-select>
       <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
         <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
@@ -15,15 +15,6 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         Search
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        新增
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
     </div>
 
     <el-table
@@ -38,37 +29,27 @@
     >
       <el-table-column label="编码" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
-          <span>{{ row.id }}</span>
+          <span>{{ row.non_drug_item.id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="名称" prop="id" sortable="custom" align="center" width="100">
         <template slot-scope="{row}">
-          <span>{{ row.name }}</span>
+          <span>{{ row.non_drug_item.name }}</span>
         </template>
       </el-table-column>
       <el-table-column label="单价" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.fee }}</span>
+          <span>{{ row.non_drug_item.fee }}</span>
         </template>
       </el-table-column>
       <el-table-column label="数量" prop="id"  align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.quantity }}</span>
+          <span>{{ 1 }}</span>
         </template>
       </el-table-column>
       <el-table-column label="价格" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.fee * row.quantity}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="开立医生" prop="id" align="center" >
-        <template slot-scope="{row}">
-          <span>{{ users.find(i=>i.uid == row.create_user_id).real_name}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="开立时间" prop="id" align="center" >
-        <template slot-scope="{row}">
-          <span>{{ row.create_time}}</span>
+          <span>{{ row.non_drug_item.fee }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="id" align="center" >
@@ -79,11 +60,11 @@
 
       <el-table-column label="Actions" align="center" width="200" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <el-button v-if="row.status=='未缴费'" type="primary" :disabled="row.status=='已退费'" size="mini" @click="handleUpdate(row)">
-            缴费
+          <el-button v-if="row.status=='已完成'" type="primary" :disabled="row.status=='已取消'" size="mini" @click="handleCreate(row)">
+            查看结果
           </el-button>
-          <el-button v-else type="danger" :disabled="row.status=='已退费'" size="mini" @click="handleDelete(row)">
-            退费
+          <el-button v-else type="danger" size="mini" :disabled="row.status == '已完成'" @click="handleUpdate(row)">
+            录入结果
           </el-button>
         </template>
       </el-table-column>
@@ -93,22 +74,38 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="实付" type="number">
-          <el-input @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="truely_pay" />
+        <el-form-item label="结果所见" type="number">
+          <el-input :readonly="dialogStatus =='create'" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="someInfo.result" />
         </el-form-item>
-        <el-form-item label="应付" prop="username">
-          <span>{{should_pay}}</span>
+        <el-form-item label="处理意见" type="number">
+          <el-input :readonly="dialogStatus =='create'" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="someInfo.advice" />
         </el-form-item>
-        <el-form-item label="找零" prop="username">
-          <span>{{retail_fee}}</span>
+        <el-form-item>
+          <span>结果图</span>
+          <a target="_blank" v-for="item,index in picLink" :href="item"><img :src="item" width="50px" height="50px" /></a>
+        </el-form-item>
+        <el-form-item v-if="dialogStatus !='create'" label="上传文件" prop="username">
+          <el-upload
+            :limit="1"
+            :data="someInfo"
+            class="upload-demo"
+            ref="upload"
+            :on-success="onSuccess"
+            :action="`http://${location}:8080/exam/submitResult`"
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="fileList"
+            :auto-upload="false">
+            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+          </el-upload>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          返回
         </el-button>
-        <el-button type="primary" :disabled="retail_fee=='无效金额'"  @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+        <el-button type="primary" v-if="dialogStatus==='update'" @click="dialogStatus==='create'?createData():updateData()">
+          提交
         </el-button>
       </div>
     </el-dialog>
@@ -128,11 +125,13 @@
 <script>
   import {withdraw, charge, getChargeItems, getHistoryChargeItems } from '@/api/outpationCharge'
   import {getAll, add, _delete} from '@/api/departments'
+  import {listPaid as listByType, getResult} from '@/api/exam'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
   import fuzzyQuery from '@/utils/utils'
+  import { getToken } from '@/utils/auth'
 
   const calendarTypeOptions = [
     { key: 'CN', display_name: 'China' },
@@ -140,12 +139,6 @@
     { key: 'JP', display_name: 'Japan' },
     { key: 'EU', display_name: 'Eurozone' }
   ]
-
-  // arr to obj, such as { CN : "China", US : "USA" }
-  const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-    acc[cur.key] = cur.display_name
-    return acc
-  }, {})
 
   export default {
     name: 'CopyComplexTable',
@@ -165,6 +158,9 @@
       }
     },
     computed:{
+      location(){
+        return window.location.hostname
+      },
       departments(){
         return bus.departments
       },
@@ -175,12 +171,19 @@
         return ["临床科室", "医技科室", "财务科室", "行政科室"]
       },
       retail_fee(){
-        let temp = new Number(this.truely_pay - this.should_pay).toFixed(2)
+        let temp = this.truely_pay - this.should_pay
         return temp < 0 ? '无效金额' : temp
       }
     },
     data() {
       return {
+        picLink:[],
+        someInfo:{
+          exam_item_id:0,
+          result:'',
+          advice:''
+        },
+        type:0,
         tableKey: 0,
         medicalRecordId: 20000017,
         list: null,
@@ -211,8 +214,8 @@
         dialogFormVisible: false,
         dialogStatus: '',
         textMap: {
-          update: '缴费',
-          create: 'Create'
+          update: '检查结果录入',
+          create: '检查检验结果查看'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -224,6 +227,7 @@
         downloadLoading: false,
         truely_pay:0,
         should_pay:0,
+        fileList:[]
       }
     },
     created() {
@@ -233,13 +237,28 @@
       this.getList()
     },
     methods: {
+      onSuccess(){
+        this.getList()
+        this.$message({
+          message: '提交成功！',
+          type: 'success'
+        })
+      },
+      submitUpload() {
+        this.$refs.upload.submit();
+        this.dialogFormVisible = false
+      },
+      handlePreview(){},
+      handleRemove(){},
       getList() {
+        this.list = []
+        this.fullList = []
+        this.total = 0
         let medical_record_id = parseInt(this.medicalRecordId)
-        getHistoryChargeItems({medical_record_id}).then(response => {
-          const {data} = response
-          this.list = data
+        listByType({medical_record_id,type:this.type}).then(res=>{
+          this.list = res.data[0].exam_item.filter(ele=>ele.status=='已登记' || ele.status =='已完成')
           this.fullList = this.list
-          this.total = data.length
+          this.total = this.list.length
         })
       },
       handleFilter() {
@@ -294,41 +313,28 @@
           type: "财务科室"
         }
       },
-      handleCreate() {
-        this.resetTemp()
+      handleCreate(row) {
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
         })
+        this.createData(row)
       },
-      createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
-        this.temp.id = parseInt(this.temp.id)
-        add(this.temp).then(res=>{
-          this.dialogFormVisible = false
-          this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
-            type: 'success',
-            duration: 2000
+      createData(row) {
+        getResult({exam_item_id:row.id}).then(res=>{
+          this.someInfo = res.data
+          this.picLink = []
+          res.data.file.forEach(ele=>{
+            this.picLink.push(window.location.protocol + '//' + window.location.hostname + ':8080' + `/${ele.saveName}`)
           })
-          this.getList()
         })
-        //})
-
       },
       handleUpdate(row) {
         this.temp = Object.assign({}, row) // copy obj
         this.temp.timestamp = new Date(this.temp.timestamp)
+        this.someInfo.exam_item_id = row.id
+        this.someInfo._uid = parseInt(getToken())
         this.dialogStatus = 'update'
         this.dialogFormVisible = true
         this.should_pay = row.fee * row.quantity
@@ -337,32 +343,9 @@
           this.$refs['dataForm'].clearValidate()
         })
       },
-      updateData() {
-        charge(
-          {
-            medical_record_id: this.temp.medical_record_id,
-            charges_id_list: [this.temp.charge_id],
-            should_pay: parseFloat(this.should_pay),
-            truely_pay: parseFloat(this.truely_pay),
-            retail_fee: parseFloat(this.retail_fee)
-          }
-        ).then(() => {
-          for (const v of this.list) {
-            if (v.id === this.temp.id) {
-              const index = this.list.indexOf(v)
-              this.list.splice(index, 1, this.temp)
-              break
-            }
-          }
-          this.dialogFormVisible = false
-          this.$notify({
-            title: 'Success',
-            message: '缴费成功!',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList()
-        })
+      updateData(row) {
+        this.submitUpload()
+        row.status = '已完成'
       },
       handleDelete(row) {
         console.log(`line 354: delete ${row}`)
