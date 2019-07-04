@@ -185,6 +185,19 @@ export const constantRoutes = [
         meta: { title: '门诊药房', icon: 'guide', noCache: true }
       }
     ]
+  },
+  {
+    path: '/paiban',
+    component: Layout,
+    redirect: '/guide/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/example/paiban'),
+        name: '排班',
+        meta: { title: '排班', icon: 'guide', noCache: true }
+      }
+    ]
   }
 ]
 
