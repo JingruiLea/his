@@ -234,8 +234,8 @@
       },
       resetTemp() {
         this.temp = {
-          id: 1,
-          name: "支付宝"
+          id: null,
+          name: ""
         }
       },
       handleCreate() {

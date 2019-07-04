@@ -364,17 +364,17 @@
       },
       resetTemp() {
         this.temp = {
-          id:12,
-          code:"86979474000209",
-          name:"黄连颗粒",
-          format:"0.5g/3g袋",
-          unit:"袋",
-          manufacturer:"江阴天江药业有限公司",
-          dosage_form:115,
-          type:"中成药",
-          price:1.07,
-          pinyin:"HLKL",
-          stock:100
+          id:null,
+          code:"",
+          name:"",
+          format:"",
+          unit:"",
+          manufacturer:"",
+          dosage_form:null,
+          type:"",
+          price:null,
+          pinyin:"",
+          stock:null
         }
       },
       handleCreate() {

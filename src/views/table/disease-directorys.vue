@@ -369,14 +369,14 @@
       },
       resetTempDisease() {
         this.tempDisease = {
-          id: 115,
-            code: "A06.051",
-            classification_name: "阿米巴病",
-            name: "急性阿米巴病",
-            pinyin: "JXAMBB",
+          id: null,
+            code: "",
+            classification_name: "",
+            name: "",
+            pinyin: "",
             custom_name: "",
             custom_pinyin: "",
-            classification_id: 1
+            classification_id: null
         }
       },
       handleCreate() {

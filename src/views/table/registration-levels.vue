@@ -268,10 +268,10 @@
       resetTemp() {
         this.temp = {
           is_default: true,
-          id: 1,
-          name: "普通号",
-          seq_num: 1,
-          fee: 10
+          id: null,
+          name: "",
+          seq_num: null,
+          fee: null
         }
       },
       handleCreate() {
