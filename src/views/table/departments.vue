@@ -329,11 +329,11 @@
       },
       resetTemp() {
         this.temp = {
-          classification_id: 12,
-          id: 4,
-          name: "测试科室",
-          pinyin: "123",
-          type: "财务科室"
+          classification_id: null,
+          id: null,
+          name: "",
+          pinyin: "",
+          type: ""
         }
       },
       handleCreate() {

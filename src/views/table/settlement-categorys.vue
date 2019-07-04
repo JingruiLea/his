@@ -148,8 +148,8 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          id: 1,
-          name: "支付宝"
+          id: null,
+          name: ""
         },
         dialogFormVisible: false,
         dialogStatus: '',

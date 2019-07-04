@@ -210,15 +210,15 @@
         statusOptions: ['published', 'draft', 'deleted'],
         canMultiDelete: false,
         temp: {
-          username: "admin2",
-          password: "12345",
-          real_name: "admin",
-          department_id: 1,
-          role_id: 1,
+          username: "",
+          password: "",
+          real_name: "",
+          department_id: null,
+          role_id: null,
           participate_in_scheduling: true,
-          title: "主任医师",
-          role_name: "医院管理员",
-          department_name: "神经科"
+          title: "",
+          role_name: "",
+          department_name: ""
         },
         dialogFormVisible: false,
         dialogStatus: '',

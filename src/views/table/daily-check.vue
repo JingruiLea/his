@@ -13,6 +13,7 @@
               v-model="collectDate"
               type="daterange"
               value-format="yyyy-MM-dd HH:mm:ss"
+              unlink-panels
               range-separator="-"
               start-placeholder="开始日期"
               end-placeholder="结束日期">

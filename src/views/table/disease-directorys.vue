@@ -107,6 +107,9 @@
         <el-form-item label="名称" prop="username">
           <el-input v-model="temp.name" />
         </el-form-item>
+        <el-form-item label="国际标准码" prop="username">
+          <el-input v-model="temp.code" />
+        </el-form-item>
         <el-form-item label="拼音" prop="username">
           <el-input v-model="temp.pinyin" />
         </el-form-item>
@@ -217,11 +220,11 @@
         showReviewer: false,
         tempClassification: {},
         temp: {
-          id: 115,
-          code: "A06.051",
-          classification_name: "阿米巴病",
-          name: "急性阿米巴病",
-          pinyin: "JXAMBB",
+          id: null,
+          code: "",
+          classification_name: "",
+          name: "",
+          pinyin: "",
           custom_name: "",
           custom_pinyin: ""
         },

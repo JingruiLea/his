@@ -172,9 +172,9 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          id:1,
-          fee_name:"挂号费",
-          pinyin:"GHF"
+          id:null,
+          fee_name:"",
+          pinyin:""
         },
         dialogFormVisible: false,
         dialogStatus: '',
