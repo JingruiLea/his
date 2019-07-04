@@ -97,7 +97,7 @@
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="handleFilter" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 400px; margin-left:50px;">
         <el-form-item label="编码" type="number">
           <el-input
             v-model="temp.id"
@@ -111,7 +111,7 @@
           <el-input v-model="temp.pinyin" />
         </el-form-item>
         <el-form-item label="分类" prop="username">
-          <el-select v-model="temp.classification_id" filterable class="filter-item" placeholder="Please select">
+          <el-select v-model="temp.classification_id" filterable class="filter-item" placeholder="请选择">
             <el-option v-for="item,index in diseaseClassifications" :key="index" :label="item.name" :value="item.id" />
           </el-select>
         </el-form-item>
@@ -228,8 +228,8 @@
         dialogFormVisible: false,
         dialogStatus: '',
         textMap: {
-          update: 'Edit',
-          create: 'Create'
+          update: '编辑',
+          create: '新建'
         },
         dialogPvVisible: false,
         pvData: [],
