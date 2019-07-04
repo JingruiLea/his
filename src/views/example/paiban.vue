@@ -12,11 +12,7 @@
         新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        导出
-      </el-button>
-      <input style="display: none;" ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="onFileChange">
-      <el-button icon="el-icon-upload" type="primary" @click="handleChoose">
-        上传
+        导入
       </el-button>
       <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">
         删除
@@ -40,41 +36,46 @@
       <el-table-column
         v-if="canMultiDelete"
         type="selection"
-        >
+      >
       </el-table-column>
       <el-table-column label="ID" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.uid }}</span>
+          <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="登录名" prop="id" align="center">
+      <el-table-column label="姓名" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.username }}</span>
+          <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="姓名" prop="id" align="center" >
+
+      <el-table-column label="科室" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.real_name }}</span>
+          <span>{{ row.department_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="角色" prop="id"  align="center" >
-        <template slot-scope="{row}">
-          <span>{{ row.role_name }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="是否排班" prop="id" width="70px" align="center" >
-        <template slot-scope="{row}">
-          <span>{{ row.participate_in_scheduling ? '是' : '否' }}</span>
-        </template>
-      </el-table-column>
+
       <el-table-column label="职位" prop="id" align="center" >
         <template slot-scope="{row}">
           <span>{{ row.title }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="科室" prop="id" align="center" >
+
+      <el-table-column label="限号" prop="id"  align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.department }}</span>
+          <span>{{ row.scheduling_limit }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="截止日期" prop="id" width="70px" align="center" >
+        <template slot-scope="{row}">
+          <span>{{ row.expiry_date }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="挂号等级" prop="id" align="center" >
+        <template slot-scope="{row}">
+          <span>{{ row.registration_Level }}</span>
         </template>
       </el-table-column>
 
@@ -143,12 +144,12 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {all, _delete, add, update, _import} from '@/api/userMana'
+  import {all, _delete, add, update,_import} from '@/api/paiban'
   import waves from '@/directive/waves' // waves directive
+  import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
-  import UploadExcel from "../excel/upload-excel";
-  import axios from 'axios'
+  import fuzzyQuery from '@/utils/utils'
 
   const calendarTypeOptions = [
     { key: 'CN', display_name: 'China' },
@@ -165,7 +166,7 @@
 
   export default {
     name: 'CopyComplexTable',
-    components: {UploadExcel, Pagination },
+    components: { Pagination },
     directives: { waves },
     filters: {
       statusFilter(status) {
@@ -181,9 +182,6 @@
       }
     },
     computed:{
-      location(){
-        return window.location.hostname
-      },
       departments(){
         return bus.departments
       },
@@ -196,7 +194,6 @@
     },
     data() {
       return {
-        file: null,
         multiSelection:[],
         tableKey: 0,
         list: null,
@@ -218,15 +215,15 @@
         statusOptions: ['published', 'draft', 'deleted'],
         canMultiDelete: false,
         temp: {
-          username: "",
-          password: "",
-          real_name: "",
-          department_id: null,
-          role_id: null,
+          username: "admin2",
+          password: "12345",
+          real_name: "admin",
+          department_id: 1,
+          role_id: 1,
           participate_in_scheduling: true,
-          title: "",
-          role_name: "",
-          department_name: ""
+          title: "主任医师",
+          role_name: "医院管理员",
+          department_name: "神经科"
         },
         dialogFormVisible: false,
         dialogStatus: '',
@@ -253,12 +250,12 @@
       },
       multiDelete(){
         let data = this.multiSelection.map(item=>{
-          return item.uid
+          return item.id
         })
         _delete({data:data}).then(res =>{
           this.$notify({
-            title: '成功',
-            message: '删除成功',
+            title: 'Success',
+            message: 'Delete Successfully',
             type: 'success',
             duration: 2000
           })
@@ -269,16 +266,9 @@
         this.listLoading = true
         all().then(response => {
           const {data} = response
-          const {users, departments, roles} = data
-          bus.users = users
-          bus.departments = departments
-          bus.roles = roles
-          this.list = users.map(user=>{
-            user.department = departments.find(i => i.id == user.department_id).name
-            return user
-          })
+          this.list = data
           this.fullList = this.list
-          this.total = users.length
+          this.total = this.list.length
           this.listQuery = {
             page: 1,
             limit: 20,
@@ -289,11 +279,8 @@
             sort: '+id'
           }
           this.handleFilter();
-
+          this.listLoading = false
           // Just to simulate the time of the request
-          setTimeout(() => {
-            this.listLoading = false
-          }, 1.5 * 1000)
         })
       },
       handleFilter(flag) {
@@ -339,7 +326,7 @@
       },
       handleModifyStatus(row, status) {
         this.$message({
-          message: '操作成功',
+          message: '操作Success',
           type: 'success'
         })
         row.status = status
@@ -363,15 +350,15 @@
       },
       resetTemp() {
         this.temp = {
-          username: "",
-          password: "",
-          real_name: "",
-          department_id: null,
-          role_id: null,
+          username: "admin2",
+          password: "12345",
+          real_name: "admin",
+          department_id: 1,
+          role_id: 1,
           participate_in_scheduling: true,
-          title: "",
-          role_name: "",
-          department_name: ""
+          title: "主任医师",
+          role_name: "医院管理员",
+          department_name: "神经科"
         }
       },
       handleCreate() {
@@ -383,19 +370,19 @@
         })
       },
       createData() {
-          add(this.temp).then(res=>{
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-            this.getList()
+        add(this.temp).then(res=>{
+          this.list.unshift(this.temp)
+          this.dialogFormVisible = false
+          this.$notify({
+            title: 'Success',
+            message: 'Created Successfully',
+            type: 'success',
+            duration: 2000
           })
           this.getList()
         })
+        //})
+
       },
       handleUpdate(row) {
         this.temp = Object.assign({}, row) // copy obj
@@ -421,8 +408,8 @@
               }
               this.dialogFormVisible = false
               this.$notify({
-                title: '成功',
-                message: '更新成功',
+                title: 'Success',
+                message: 'Update Successfully',
                 type: 'success',
                 duration: 2000
               })
@@ -433,9 +420,9 @@
       },
       handleDelete(row) {
         console.log(`line 354: delete ${row}`)
-        _delete({data:[row.uid]}).then(res =>{
+        _delete({data:[row.id]}).then(res =>{
           this.$notify({
-            title: '成功',
+            title: 'Success',
             message: '删除成功',
             type: 'success',
             duration: 2000
@@ -458,53 +445,22 @@
           const filterVal = ['uid', 'username', 'role_name', 'real_name', 'title', 'department']
           const data = this.formatJson(filterVal, this.list)
           console.log(data)
-          excel.export_json_to_excel({
-            header: tHeader,
-            data: data,
-            filename: '用户信息'
-          })
+          // excel.export_json_to_excel({
+          //   header: tHeader,
+          //   data: data,
+          //   filename: '用户信息'
+          // })
           this.downloadLoading = false
         })
       },
       formatJson(filterVal, jsonData) {
         return jsonData.map(v => filterVal.map(j => {
-          return v[j]
+          if (j === 'timestamp') {
+            return parseTime(v[j])
+          } else {
+            return v[j]
+          }
         }))
-      },
-      handleChoose(){
-        this.$refs['excel-upload-input'].click()
-      },
-      handleUpload(){
-        if(this.file){
-          let form = new FormData()
-          form.append('file', this.file)
-          let config = {
-            headers:{'Content-Type':'multipart/form-data'}
-          };
-          axios({url: 'http://localhost:8080/userManagement/import', method:'post', config, data: form}).then(res => {
-            this.$notify({
-              title: 'Success',
-              message: '上传成功',
-              type: 'success',
-              duration: 2000
-            })
-            this.getList()
-          })
-        }else{
-          this.$notify({
-            title: '请选择',
-            message: '请选择文件',
-            type: 'danger',
-            duration: 2000
-          })
-        }
-      },
-      onFileChange(e) {
-        let files = e.target.files || e.dataTransfer.files
-        if (!files.length)
-          return;
-        this.file = files[0]
-        this.handleUpload()
       }
     }
   }

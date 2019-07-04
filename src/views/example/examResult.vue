@@ -80,7 +80,7 @@
         <el-form-item label="处理意见" type="number">
           <el-input :readonly="dialogStatus =='create'" @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="someInfo.advice" />
         </el-form-item>
-        <el-form-item>
+        <el-form-item v-if="dialogStatus=='create'">
           <span>结果图</span>
           <a target="_blank" v-for="item,index in picLink" :href="item"><img :src="item" width="50px" height="50px" /></a>
         </el-form-item>

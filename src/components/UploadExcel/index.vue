@@ -1,11 +1,11 @@
 <template>
   <div>
     <input ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="handleClick">
-    <div class="drop" @drop="handleDrop" @dragover="handleDragover" @dragenter="handleDragover">
+    <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
+      Browse
+    </el-button>
+    <div class="drop" @drop="handleDrop" v-if="dragable" @dragover="handleDragover" @dragenter="handleDragover">
       Drop excel file here or
-      <el-button :loading="loading" style="margin-left:16px;" size="mini" type="primary" @click="handleUpload">
-        Browse
-      </el-button>
     </div>
   </div>
 </template>
@@ -15,6 +15,7 @@ import XLSX from 'xlsx'
 
 export default {
   props: {
+    dragable: Boolean,
     beforeUpload: Function, // eslint-disable-line
     onSuccess: Function// eslint-disable-line
   },

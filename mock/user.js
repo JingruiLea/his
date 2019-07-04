@@ -49,24 +49,11 @@ export default [
 
   // get user info
   {
-    url: '/user/info\.*',
+    url: '/user/info',
     type: 'get',
-    response: config => {
-      const { token } = config.query
-      const info = users[token]
-
-      // mock error
-      if (!info) {
-        return {
-          code: 50008,
-          message: 'Login failed, unable to get user details.'
-        }
-      }
-
-      return {
-        code: 20000,
-        data: info
-      }
+    response: req => {
+      return JSON.parse(`{"code":200,"data":[{"id":10001,"name":"挂号收费员(测试）","department_name":"心血管内科","title":"专家","shift":"全天","expiry_date":"2019-07-31","scheduling_limit":51,"registration_Level":"普通号"},{"id":10002,"name":"财务管理员(测试","department_name":"心血管内科","title":"专家","shift":"上午","expiry_date":"2019-07-30","scheduling_limit":100,"registration_Level":"急诊号"},{"id":10003,"name":"药房管理员(测试","department_name":"心血管内科","title":"专家","shift":"下午","expiry_date":"2019-06-30","scheduling_limit":20,"registration_Level":"专家号"}]}
+len`)
     }
   },
 
