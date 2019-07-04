@@ -253,7 +253,7 @@ export const asyncRoutes = [
   // chartsRouter,
   // nestedRouter,
    tableRouter,
-
+    chartsRouter,
   // {
   //   path: '/example',
   //   component: Layout,
