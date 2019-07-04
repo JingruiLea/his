@@ -86,7 +86,7 @@
 <script>
 
   import {all as allPres, create as createPres, detail as detailPres, update, submit} from '../../../api/prescription'
-  import {create as createTemplate , update as updateTemplate} from '@/api/prescriptionTemplate'
+  import {create as createTemplate , update as updateTemplate, _delete as deleteTemplate} from '../../../api/prescriptionTemplate'
   export default {
     name:'PresEdit',
     props:['pres', 'type', 'hasSubmit', 'template','medical_record_id'],
@@ -208,7 +208,7 @@
         })
       },
       deleteTemplate(){
-        deleteTemplate({idArr:[this.diagnose.id]}).then(res=>{
+        deleteTemplate({id:[this.pres.id]}).then(res=>{
           this.$notify({
             title: 'Success',
             message: '删除模板成功!',

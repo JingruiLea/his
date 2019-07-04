@@ -26,7 +26,7 @@ export function update(data) {
 
 export function _delete(data) {
   return request({
-    url: '/exam/delete',
+    url: '/prescriptionTemplate/delete',
     method: 'post',
     data
   })

@@ -39,3 +39,10 @@ export function update(data) {
     data
   })
 }
+export function _delete(data) {
+  return request({
+    url: '/examTemplate/delete',
+    method: 'post',
+    data
+  })
+}

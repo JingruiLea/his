@@ -221,7 +221,11 @@
       getList() {
         let medical_record_id = parseInt(this.medicalRecordId)
         listByType({medical_record_id,type:this.type}).then(res=>{
-          this.list = res.data[0].exam_item.filter(ele=>ele.status != '已完成')
+          if (res.data[0]) {
+            this.list = res.data[0].exam_item.filter(ele => ele.status != '已完成')
+          } else {
+            this.list = []
+          }
           this.fullList = this.list
           this.total = this.list.length
         })

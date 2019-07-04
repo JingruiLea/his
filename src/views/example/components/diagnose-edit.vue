@@ -4,7 +4,7 @@
     <div v-if="!creatingTemplate && !template">
       <el-button type="danger" size="mini" @click="reset" :disabled="hasSubmit">清空</el-button>
       <el-button type="primary" size="mini" @click="saveAsTemplate" >生成模板</el-button>
-      <el-button type="primary" size="mini" @click="tempSave" :disabled="hasSubmit">暂存</el-button>
+      <el-button type="primary" size="mini" @click="tempSave" :disabled="hasSubmit" v-if="activeIndex != '7'">暂存</el-button>
       <el-button type="success" size="mini" @click="next" :disabled="hasSubmit">提交</el-button>
     </div>
     <div v-if="template">
@@ -115,11 +115,11 @@
 </template>
 
 <script>
-  import {create as createTemplate, update as updateTemplate, _delete as deleteTemplate} from '@/api/diagnoseTemplate'
+  import {create as createTemplate, update as updateTemplate, _delete as deleteTemplate} from '../../../api/diagnoseTemplate'
 
   export default {
     name:'DiagnoseEdit',
-    props:['diagnose', 'hasSubmit', 'template'],
+    props:['diagnose', 'hasSubmit', 'activeIndex', 'template'],
     data(){
       return {
         creatingTemplate: false,
@@ -152,10 +152,12 @@
         }
       },
       removeDiagnose(row) {
+        let temp = JSON.parse(JSON.stringify(this.diagnose))
         let index = this.diagnose.western_diagnose.indexOf(row)
-        if (index != -1) this.diagnose.western_diagnose.splice(index, 1)
+        if (index != -1) temp.western_diagnose.splice(index, 1)
         index = this.diagnose.chinese_diagnose.indexOf(row)
-        if (index != -1) this.diagnose.chinese_diagnose.splice(index, 1)
+        if (index != -1) temp.chinese_diagnose.splice(index, 1)
+        this.$emit('update:diagnose', temp)
       },
       reset(){
         this.$emit('reset')

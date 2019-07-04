@@ -6,15 +6,22 @@
           highlight-current-row
           :data="patients"
           style="width: 100%"
-          row-class-name="asider-item"
           @row-click="onPatientClick"
         >
           <el-table-column
             label="待诊患者">
-            <template slot-scope="{row}" class="asider-item">
+            <template slot-scope="{row}">
               <el-tag
                 :type="row.status === '未看诊' ? 'primary' : 'success'"
                 disable-transitions>{{row.status}}
+              </el-tag>
+              <el-tag
+                type="primary" v-if="row.medicalRecord && row.medicalRecord.status == '已提交' "
+                disable-transitions>已提交
+              </el-tag>
+              <el-tag
+                type="danger" v-else
+                disable-transitions>未提交
               </el-tag>
               <span style="margin-left: 0.7em;">{{row.patient_name}}</span>
             </template>
@@ -23,7 +30,7 @@
       </div>
       <div></div>
     </el-aside>
-    <el-main>
+    <el-main v-if="medicalRecord.id && medicalRecord.id != null">
       {{`正在看诊:${registrationInfo.patient_name}, 病历号${this.medicalRecord.id}`}}
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
@@ -52,7 +59,7 @@
                 v-model="templateName"
               >
               </el-input>
-              <div v-if="activeIndex=='0' || activeIndex == '1'">
+              <div v-if="activeIndex=='0' || activeIndex == '1' || activeIndex == '7'">
                 <el-tree
                   ref="tree"
                   :filter-node-method="filterNode"
@@ -67,7 +74,7 @@
                 ></el-tree>
               </div>
               <el-tree
-                v-if="activeIndex > '1'"
+                v-if="activeIndex > '1' && activeIndex != '7'"
                 ref="tree2"
                 :filter-node-method="filterNode"
                 :data="templateClasses2"
@@ -222,13 +229,14 @@
           </el-col>
           <el-col v-if="activeIndex == '1' || activeIndex=='7'" :span="12" :offset="1">
             <diagnose-edit
+              :active-index="activeIndex"
               @tempSave="onDiagnoseTempSave"
               @next="next"
               @apply="applyDiagnoseTemplate"
               @back="isDiagnoseTemplate = false"
               :template.sync="isDiagnoseTemplate"
               :diagnose="isDiagnoseTemplate? diagnoseTemplate : diagnose"
-              @update:diagnose="(e)=>{diagnose = e}"
+              @update:diagnose="(e)=>{isDiagnoseTemplate? diagnoseTemplate = e : diagnose = e}"
               :has-submit="hasSubmit"
               @fresh="getDiagnoseTemplateList"
               @reset="resetDiagnose"
@@ -258,9 +266,7 @@
               :type="activeIndex - 5"
             ></pres-edit>
           </el-col>
-
         </el-row>
-
       </div>
     </el-main>
   </el-container>
@@ -275,7 +281,8 @@
     allHistoryMedicalRecord,
     updateMedicalRecord,
     saveMedicalRecord,
-    confirmMedicalRecord
+    confirmMedicalRecord,
+    end
   } from '@/api/medicalRecord'
   import {getMedicalRecordTemplateList, create as createMedicalRecordTemplate} from '@/api/medicalRecordTemplate'
   import {list as getExamTemplateList} from '@/api/examTemplate'
@@ -283,7 +290,7 @@
   import MedicalRecordPreviewer from "./medical-record-previewer";
   import {getDisease} from '../../../src/api/disease-directorys'
   import DiagnoseEdit from "./components/diagnose-edit";
-  import {update as updateDiagnose} from '@/api/diagnose'
+  import {update as updateDiagnose, submitEnd} from '../../api/diagnose'
   import ExamTable from "./components/ExamTable";
   import ExamEdit from "./components/ExamEdit";
   import {create as createExam, update as updateExam, detail as detailExam} from '@/api/exam'
@@ -501,9 +508,10 @@
           this.diagnose.chinese_diagnose.push(ele)
         })
       },
-      onDiagnoseNext(diagnose){
+      onDiagnoseNext(){
         console.log(this.medicalRecord)
-        updateDiagnose({medical_record_id:this.medicalRecord.id, diagnose:diagnose}).then(res=>{
+
+        updateMedicalRecord(this.medicalRecord).then(res => {
           this.$notify({
             title: 'Success',
             message: '提交成功!',
@@ -524,11 +532,17 @@
       onDiseaseClick(row) {
         console.log(row)
         let {code, name, id, classification_name} = row
-        if (!this.diagnose.western_diagnose.find(ele => ele.disease_id == id)
-          && !this.diagnose.chinese_diagnose.find(ele => ele.disease_id == id)
+        let temp
+        if(this.isDiagnoseTemplate){
+          temp = this.diagnoseTemplate
+        }else{
+          temp = this.diagnose
+        }
+        if (!temp.western_diagnose.find(ele => ele.disease_id == id)
+          && !temp.chinese_diagnose.find(ele => ele.disease_id == id)
         ) {
           if(classification_name == '中医疾病'){
-            this.diagnose.chinese_diagnose.unshift({
+            temp.chinese_diagnose.unshift({
               disease_name: name,
               disease_code: code,
               disease_id: id,
@@ -536,7 +550,7 @@
               suspect: true
             })
           }else{
-            this.diagnose.western_diagnose.unshift({
+            temp.western_diagnose.unshift({
               disease_name: name,
               disease_code: code,
               disease_id: id,
@@ -665,11 +679,8 @@
       onPatientClick(row) {
         this.activeIndex = '0'
         this.registrationInfo = row
-        getMedicalRecord({medical_record_id: row.medical_record_id}).then(res => {
-          this.medicalRecord = res.data
-          if (row.status = "未看诊") {
-            row.status = '已看诊'
-          }
+        if(row.medicalRecord){
+          this.medicalRecord = row.medicalRecord
           if (this.medicalRecord.status == '已提交') {
             this.hasSubmit = true
           } else {
@@ -681,9 +692,27 @@
             if(this.$refs['medicalRecordForm'])
               this.$refs['medicalRecordForm'].clearValidate()
           })
-
-        })
+        }else{
+          getMedicalRecord({medical_record_id: row.medical_record_id}).then(res => {
+            this.medicalRecord = res.data
+            if (row.status = "未看诊") {
+              row.status = '已看诊'
+            }
+            if (this.medicalRecord.status == '已提交') {
+              this.hasSubmit = true
+            } else {
+              this.hasSubmit = false
+            }
+            this.getList()
+            this.diagnose = this.medicalRecord.diagnose
+            this.$nextTick(() => {
+              if(this.$refs['medicalRecordForm'])
+                this.$refs['medicalRecordForm'].clearValidate()
+            })
+          })
+        }
         this.getAllHistoryMedicalRecord(row)
+        this.getMedicalRecordTemplateList()
       },
       goBack() {
 
@@ -708,7 +737,11 @@
             this.preview = false
             this.creatingTemplate = false
             this.previewIsTemplate = false
-
+            if (this.medicalRecord.status == '已提交') {
+              this.hasSubmit = true
+            } else {
+              this.hasSubmit = false
+            }
             break
           }
           case '2': {
@@ -751,6 +784,14 @@
             this.isExamTemplate = false
             break
           }
+          case '7': {
+            this.getDiagnoseTemplateList()
+            this.preview = false
+            this.creatingTemplate = false
+            this.previewIsTemplate = false
+            this.hasSubmit = false
+            break
+          }
         }
       },
       handleNodeClick(data, node) {
@@ -776,8 +817,7 @@
               this.isExamTemplate = true
               this.exam = this.templateToExam(res.data)
             })
-          }
-          else{
+          } else {
             detailPresTemplate({id:data.id}).then(res=>{
               this.isPresTemplate = true
               this.savedPres = JSON.parse(JSON.stringify(this.pres))
@@ -792,36 +832,50 @@
         this.pres = JSON.parse(JSON.stringify(this.savedPres))
         this.savedPres = temp
       },
-      getList() {
-        getPatientList().then(res => {
-          this.patients = res.data.waiting
-          for (const i of res.data.pending) {
-            this.patients.unshift(i)
+      async getList() {
+        let {data} = await getPatientList()
+        let temp = data.waiting
+        for (const i of data.pending) {
+          if(i.status == '已看诊'){
+            let res = await getMedicalRecord({medical_record_id: i.medical_record_id})
+            i.medicalRecord = res.data
+            temp.unshift(i)
+          }else{
+            temp.unshift(i)
           }
-        })
+        }
+        this.patients = temp
       },
       next() {
-        this.$refs['medicalRecordForm'].validate((valid) => {
-          if (valid) {
+        if(this.activeIndex == '1'){
             saveMedicalRecord(this.medicalRecord).then(res => {
-              this.hasSubmit = true
+              updateDiagnose({medical_record_id:this.medicalRecord.id, diagnose:this.diagnose}).then(res=>{
+                this.hasSubmit = true
+                this.$notify({
+                  title: 'Success',
+                  message: '提交成功!',
+                  type: 'success',
+                  duration: 2000
+                })
+                this.medicalRecord.status = '已提交'
+                this.getList()
+              })
+            })
+        } else{
+          submitEnd({medical_record_id:this.medicalRecord.id, diagnose:this.diagnose}).then(res=>{
+            confirmMedicalRecord({id:this.medicalRecord.id}).then(res=>{
               this.$notify({
                 title: 'Success',
-                message: '提交成功!',
+                message: '已诊毕!',
                 type: 'success',
                 duration: 2000
               })
-              this.medicalRecord.status = '已提交'
+              this.medicalRecord.status = '已诊毕'
+              this.getList()
+              this.medicalRecord = null
             })
-          } else {
-            this.$notify({
-              title: 'Error',
-              message: '填写有误!',
-              type: 'error',
-              duration: 2000
-            })
-          }
-        })
+          })
+        }
       },
       getExamTemplateList(type) {
         getExamTemplateList({type: type}).then(res => {
@@ -930,7 +984,6 @@
 
     created() {
       this.getList()
-      this.handleClick()
     },
 
   }

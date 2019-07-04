@@ -71,7 +71,7 @@
 
 <script>
   import {list as listExam, create as createExam, update as updateExam,send as sendExam, _delete as deleteExam, detail as detailExam} from '@/api/exam'
-  import {create as createTemplate, update as updateTemplate} from '@/api/examTemplate'
+  import {create as createTemplate, update as updateTemplate , _delete as deleteTemplate} from '@/api/examTemplate'
 
 
 
@@ -190,7 +190,7 @@
         })
       },
       deleteTemplate(){
-        deleteTemplate({idArr:[this.diagnose.id]}).then(res=>{
+        deleteTemplate({id:[this.exam.id]}).then(res=>{
           this.$notify({
             title: 'Success',
             message: '删除模板成功!',

@@ -8,6 +8,14 @@ export function getPatientList(data) {
   })
 }
 
+export function end(data) {
+  return request({
+    url: '/medicalRecord/end',
+    method: 'post',
+    data
+  })
+}
+
 export function getMedicalRecord(data) {
   return request({
     url: '/medicalRecord/getMedicalRecord',

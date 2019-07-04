@@ -8,6 +8,14 @@ export function registrationByRecordId(data) {
   })
 }
 
+export function submitEnd(data) {
+  return request({
+    url: '/diagnose/submitEnd',
+    method: 'post',
+    data
+  })
+}
+
 export function getChargeItems(data) {
   return request({
     url: '/diagnoseTemplate/list',
