@@ -515,12 +515,15 @@
         console.log(this.medicalRecord)
 
         updateMedicalRecord(this.medicalRecord).then(res => {
-          this.$notify({
-            title: 'Success',
-            message: '提交成功!',
-            type: 'success',
-            duration: 2000
-          })
+           getMedicalRecord({medical_record_id: this.medicalRecord.id}).then(res=>{
+             this.medicalRecord = res.data
+             this.$notify({
+               title: 'Success',
+               message: '提交成功!',
+               type: 'success',
+               duration: 2000
+             })
+           })
         })
       },
       resetDiagnose(){

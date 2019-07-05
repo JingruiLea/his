@@ -136,14 +136,15 @@ export const asyncRoutes = [
   tableRouter,
   chargeRouter,
   medicalRecordRouter,
-  medicineRouter,
   examRouter,
+  medicineRouter,
   chartsRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 
 const createRouter = () => new Router({
   // mode: 'history', // require service support
+  //base: '/vue/',
   scrollBehavior: () => ({ y: 0 }),
   routes: constantRoutes
 })

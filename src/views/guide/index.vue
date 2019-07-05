@@ -341,6 +341,12 @@
       },
       handleDelete(row){
         withdrawNumber({medical_record_id: row.medical_record_id}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '退号成功!',
+            type: 'success',
+            duration: 2000
+          })
           row.status = '已退号'
         })
       },

@@ -58,7 +58,7 @@
       </el-table-column>
       <el-table-column label="价格" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.drug.price * row.amount }}</span>
+          <span>{{new Number(row.drug.price * row.amount).toFixed(2)}}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" prop="id" align="center" >

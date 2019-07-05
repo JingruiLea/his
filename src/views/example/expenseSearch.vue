@@ -4,7 +4,9 @@
           <el-col :span="7">
             <el-input
               placeholder="输入病历号"
-              v-model="medicalRecordInput">
+              @keyup.enter.native="getList"
+              v-model="medicalRecordInput"
+            >
             </el-input>
           </el-col>
           <el-col :span="11" :offset="1">
@@ -87,7 +89,7 @@
       </el-table-column>
       <el-table-column label="创建时间" prop="id" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.creat_time }}</span>
+          <span>{{ row.create_time }}</span>
         </template>
       </el-table-column>
       <el-table-column label="收费时间" prop="id" align="center">
@@ -173,8 +175,8 @@
         medicalRecordInput:20000017,
         currentRow: null,
         collectDate:[
-          '2000-01-01 00:00:00',
-          '2020-01-01 00:00:00'
+          '2019-07-04 00:00:00',
+          '2019-07-06 00:00:00'
         ],
         collectorList:null,
         tableKey: 0,

@@ -18,7 +18,7 @@ export function getChargeItems(data) {
 
 export function getHistoryChargeItems(data) {
   return request({
-    url: '/outpatientCharge/getHistoryChargeItems',
+    url: '/outpatientCharge/getHistoryChargeItems2',
     method: 'post',
     data
   })

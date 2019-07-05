@@ -126,7 +126,7 @@
 </template>
 
 <script>
-  import {withdraw, charge, getChargeItems, getHistoryChargeItems } from '@/api/outpationCharge'
+  import {withdraw, charge, getChargeItems, getHistoryChargeItems } from '../../api/outpationCharge'
   import {getAll, add, _delete} from '@/api/departments'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
