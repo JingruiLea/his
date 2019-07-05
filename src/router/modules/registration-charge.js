@@ -25,6 +25,12 @@ const chargeRouter = {
       meta: { title: '收费/退费', noCache: true }
     },
     {
+      path: '/search',
+      component: () => import('@/views/example/expenseSearch'),
+      name: 'search',
+      meta: { title: '患者费用查询', noCache: true }
+    },
+    {
       path: 'daily-collect',
       component: () => import('@/views/table/daily-collect'),
       name: 'daily-collect',

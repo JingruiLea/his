@@ -367,31 +367,19 @@
         }
         this.handleFilter()
       },
-      resetTempDisease() {
-        this.tempDisease = {
-          id: null,
-          code: "",
-          classification_name: "",
-          name: "",
-          pinyin: "",
-          custom_name: "",
-          custom_pinyin: "",
-          classification_id: null
-        }
-      },
       resetTemp(){
         this.temp = {
           id: null,
-          code: "",
-          classification_name: "",
-          name: "",
-          pinyin: "",
-          custom_name: "",
-          custom_pinyin: ""
+            code: "",
+            classification_name: "",
+            name: "",
+            pinyin: "",
+            custom_name: "",
+            custom_pinyin: ""
         }
       },
       handleCreate() {
-        this.resetTempDisease()
+        this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
         this.$nextTick(() => {

@@ -31,10 +31,10 @@ const chartsRouter = {
       meta: { title: '开单科室工作量统计', noCache: true }
     },
     {
-      path: 'doctorStatistics',
-      component: () => import('@/views/charts/doctorStatistics'),
-      name: 'doctorStatistics',
-      meta: { title: '门诊医生个人工作量统计', noCache: true }
+      path: 'personalStatistics',
+      component: () => import('@/views/charts/personalStatistics'),
+      name: 'personalStatistics',
+      meta: { title: '个人工作量统计', noCache: true }
     },
     {
       path: 'daily-check',
