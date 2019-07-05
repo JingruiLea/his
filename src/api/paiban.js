@@ -8,9 +8,17 @@ export function all(data) {
   })
 }
 
-export function _delete(data) {
+export function getAll(data) {
   return request({
-    url: '/doctorSchedulingManagement/delete',
+    url: '/doctorWorkforceManagement/getAll',
+    method: 'post',
+    data
+  })
+}
+
+export function choose(data) {
+  return request({
+    url: '/doctorWorkforceManagement/choose',
     method: 'post',
     data
   })

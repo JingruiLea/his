@@ -2,28 +2,28 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="medicalRecordId" placeholder="病历号" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="状态" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="type" placeholder="类型" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item,index in [[`检查`,0],[`检验`,1],[`处置`,2]]" :key="index" :label="item[0]" :value="item[1]" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+<!--      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />-->
+<!--      <el-select v-model="listQuery.importance" placeholder="状态" clearable style="width: 90px" class="filter-item">-->
+<!--        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />-->
+<!--      </el-select>-->
+<!--      <el-select v-model="type" placeholder="类型" clearable class="filter-item" style="width: 130px">-->
+<!--        <el-option v-for="item,index in [[`检查`,0],[`检验`,1],[`处置`,2]]" :key="index" :label="item[0]" :value="item[1]" />-->
+<!--      </el-select>-->
+<!--      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">-->
+<!--        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />-->
+<!--      </el-select>-->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
         搜索
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        新增
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
+<!--      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">-->
+<!--        新增-->
+<!--      </el-button>-->
+<!--      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">-->
+<!--        Export-->
+<!--      </el-button>-->
+<!--      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">-->
+<!--        多选-->
+<!--      </el-checkbox>-->
     </div>
 
     <el-table
@@ -72,7 +72,7 @@
           <el-button v-if="row.status=='未取药'" type="primary" :disabled="row.status=='已取消'" size="mini" @click="dispense(row)">
             取药
           </el-button>
-          <el-button v-else type="danger" :disabled="row.status=='已退药'" size="mini" @click="withdraw(row)">
+          <el-button v-else type="danger" :disabled="row.status=='已退药'" size="mini" @click="handleCreate(row)">
             退药
           </el-button>
         </template>
@@ -83,14 +83,8 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="实付" type="number">
-          <el-input @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="truely_pay" />
-        </el-form-item>
-        <el-form-item label="应付" prop="username">
-          <span>{{should_pay}}</span>
-        </el-form-item>
-        <el-form-item label="找零" prop="username">
-          <span>{{retail_fee}}</span>
+        <el-form-item label="退药数量" type="number">
+          <el-input @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="temp.amount" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -177,17 +171,13 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          classification_id: 12,
-          id: 4,
-          name: "测试科室",
-          pinyin: "123",
-          type: "财务科室"
+
         },
         dialogFormVisible: false,
         dialogStatus: '',
         textMap: {
           update: '缴费',
-          create: 'Create'
+          create: '请输入退药数量'
         },
         dialogPvVisible: false,
         pvData: [],
@@ -276,8 +266,8 @@
           type: "财务科室"
         }
       },
-      handleCreate() {
-        this.resetTemp()
+      handleCreate(row) {
+        this.temp = JSON.parse(JSON.stringify(row))
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
         this.$nextTick(() => {
@@ -285,28 +275,8 @@
         })
       },
       createData() {
-        //this.$refs['dataForm'].validate((valid) => {
-        // if (valid) {
-        //   this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-        //   this.temp.author = 'vue-element-admin'
-        //   createArticle(this.temp).then(() => {
-
-        //   })
-        // }
-        //console.log(`post data${JSON.stringify(this.temp)}`)
-        this.temp.id = parseInt(this.temp.id)
-        add(this.temp).then(res=>{
-          this.dialogFormVisible = false
-          this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
-            type: 'success',
-            duration: 2000
-          })
-          this.getList()
-        })
-        //})
-
+        this.temp.amount = parseInt(this.temp.amount)
+        this.withdraw(this.temp)
       },
       withdraw(row){
         let temp = JSON.parse(JSON.stringify(row))
@@ -319,6 +289,8 @@
             duration: 2000
           })
           row.status = '已退药'
+          this.dialogFormVisible = false
+          this.getList()
         })
       },
       dispense(row){

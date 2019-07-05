@@ -240,7 +240,7 @@
           medical_certificate_number: "371625223284621134",
           medical_certificate_number_type: "id",
           medical_insurance_diagnosis: "不知道什么意思",
-          patient_name: "王蓓蕾",
+          patient_name: "王先生",
           outpatient_doctor_id  : undefined,
           settlement_category_id: 1,
           registration_source: "app挂号",
@@ -407,6 +407,18 @@
                 message: '提交成功!',
                 type: 'success',
                 duration: 2000
+              })
+              registrationByRecordId({medical_record_id:res.data.medical_record_number}).then(res=>{
+                if(!this.list){
+                  this.list = []
+                }
+                for(let item of this.list){
+                  console.log(item,res.data)
+                  if(item.medical_record_id == res.data.medical_record_id){
+                    return
+                  }
+                }
+                this.list.push(res.data)
               })
             })
           }

@@ -30,7 +30,7 @@
       </div>
       <div></div>
     </el-aside>
-    <el-main v-if="medicalRecord.id && medicalRecord.id != null">
+    <el-main v-if="medicalRecord && medicalRecord.id && medicalRecord.id != null">
       {{`正在看诊:${registrationInfo.patient_name}, 病历号${this.medicalRecord.id}`}}
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
@@ -93,21 +93,22 @@
                 stripe
                 :data="historyMedicalRecord"
                 style="width: 100%"
-                row-class-name="asider-item"
                 @row-click="onHistoryClick"
               >
                 <el-table-column
                   :label="historyLabelArr[activeIndex]"
                   prop="name"
+                  align="center"
                 >
                 </el-table-column>
                 <el-table-column
-
+                  align="center"
                   prop="diagnose"
                 >
                 </el-table-column>
                 <el-table-column
                   prop="time"
+                  align="center"
                 >
                 </el-table-column>
               </el-table>
@@ -192,7 +193,7 @@
               <el-form v-if="activeIndex=='0'" ref="medicalRecordForm" style="margin-top: 1.2em;" :rules="rules"
                        :model="medicalRecord">
                 <div v-if="creatingTemplate">
-                  <el-form-item label="模板类型" prop="title">
+                  <el-form-item label="模板类型" prop="type">
                     <el-select v-model="medicalRecord.type" placeholder="type"
                                class="filter-item">
                       <el-option v-for="item,index in [['个人',0],['科室',1],['全院',2]]" :key="index" :label="item[0]"
@@ -834,17 +835,16 @@
       },
       async getList() {
         let {data} = await getPatientList()
-        let temp = data.waiting
+        this.patients = data.waiting
         for (const i of data.pending) {
           if(i.status == '已看诊'){
             let res = await getMedicalRecord({medical_record_id: i.medical_record_id})
             i.medicalRecord = res.data
-            temp.unshift(i)
+            this.patients.push(i)
           }else{
-            temp.unshift(i)
+            this.patients.push(i)
           }
         }
-        this.patients = temp
       },
       next() {
         if(this.activeIndex == '1'){
@@ -873,6 +873,7 @@
               this.medicalRecord.status = '已诊毕'
               this.getList()
               this.medicalRecord = null
+              this.activeIndex = '0'
             })
           })
         }

@@ -2,10 +2,10 @@
   <div class="app-container">
     <div class="filter-container">
       <el-select v-model="listQuery.department" placeholder="排班科室" class="filter-item">
-        <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.name" />
+        <el-option v-for="item,index in departments" :key="index" :label="item.name" :value="item.id" />
       </el-select>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        新增排班信息
+        新增
       </el-button>
       <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         导入
@@ -51,21 +51,21 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="午别" prop="id" align="center" >
+      <el-table-column label="职位" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.shift }}</span>
+          <span>{{ row.title }}</span>
         </template>
       </el-table-column>
 
       <el-table-column label="限号" prop="id"  align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.reg_limit }}</span>
+          <span>{{ row.scheduling_limit }}</span>
         </template>
       </el-table-column>
 
-      <el-table-column label="排班日期" prop="id" align="center" >
+      <el-table-column label="有效期限" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.schedule_date }}</span>
+          <span>{{ row.expiry_date }}</span>
         </template>
       </el-table-column>
 
@@ -140,7 +140,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import { getAll, choose, _delete, add, update,_import} from '../../api/paiban'
+  import { getAll, all, _delete, add, update,_import} from '@/api/paiban'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -359,17 +359,11 @@
       },
       handleCreate() {
         this.resetTemp()
-        let req = {
-          data: [],
-          dateRange: [],
-          num: 3
-        }
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
         })
-        choose()
       },
       createData() {
         add(this.temp).then(res=>{
