@@ -1,6 +1,5 @@
 <template>
   <el-row>
-<!--    <pagination v-show="total > -1" style="width: auto;" :total="total" :page.sync="query.page" :limit.sync="query.limit" @pagination="getList" />-->
     <el-table
       @row-click="onExamClick"
       @mouseup.native.stop="()=>{}"
@@ -37,6 +36,7 @@
 <!--        </template>-->
 <!--      </el-table-column>-->
     </el-table>
+    <pagination v-show="total > -1" style="width: auto;" :total="total" :page.sync="query.page" :limit.sync="query.limit" @pagination="getList" />
   </el-row>
 </template>
 

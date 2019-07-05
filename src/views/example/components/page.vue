@@ -41,7 +41,7 @@
       },
       layout: {
         type: String,
-        default: 'total,  prev, next, jumper'
+        default: 'total,  prev, next'
       },
       background: {
         type: Boolean,

@@ -15,7 +15,7 @@
         导出
       </el-button>
       <input style="display: none;" ref="excel-upload-input" class="excel-upload-input" type="file" accept=".xlsx, .xls" @change="onFileChange">
-      <el-button icon="el-icon-upload" type="primary" @click="handleChoose">
+      <el-button icon="el-icon-upload" class="filter-item" style="margin-left: 10px;" type="primary" @click="handleChoose">
         上传
       </el-button>
       <el-button v-if="canMultiDelete" :loading="downloadLoading" class="filter-item" type="danger" icon="el-icon-delete" @click="multiDelete">

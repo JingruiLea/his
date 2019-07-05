@@ -86,37 +86,18 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="实付" type="number">
-          <el-input @keyup.enter.native="dialogStatus==='create'?createData():updateData()" v-model="truely_pay" />
-        </el-form-item>
-        <el-form-item label="应付" prop="username">
-          <span>{{should_pay}}</span>
-        </el-form-item>
-        <el-form-item label="找零" prop="username">
-          <span>{{retail_fee}}</span>
-        </el-form-item>
-      </el-form>
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="80%" top="0">
+      <exam-reg-edit :medical_record_id="parseInt(medicalRecordId)"></exam-reg-edit>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           Cancel
         </el-button>
-        <el-button type="primary" :disabled="retail_fee=='无效金额'"  @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
-        </el-button>
+<!--        <el-button type="primary" :disabled="retail_fee=='无效金额'"  @click="dialogStatus==='create'?createData():updateData()">-->
+<!--          Confirm-->
+<!--        </el-button>-->
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">Confirm</el-button>
-      </span>
-    </el-dialog>
   </div>
 </template>
 
@@ -128,6 +109,7 @@
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
   import {register,cancel as withdraw} from "../../api/exam";
+  import ExamRegEdit from "./components/examRegEdit";
 
   const calendarTypeOptions = [
     { key: 'CN', display_name: 'China' },
@@ -138,7 +120,7 @@
 
   export default {
     name: 'CopyComplexTable',
-    components: { Pagination },
+    components: {ExamRegEdit, Pagination },
     directives: { waves },
     filters: {
       statusFilter(status) {
@@ -291,9 +273,6 @@
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
       },
       createData() {
         //this.$refs['dataForm'].validate((valid) => {
@@ -354,9 +333,6 @@
         this.dialogFormVisible = true
         this.should_pay = row.fee * row.quantity
         this.truely_pay = 0
-        this.$nextTick(() => {
-          this.$refs['dataForm'].clearValidate()
-        })
       },
       updateData() {
         charge(

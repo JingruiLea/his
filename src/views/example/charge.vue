@@ -105,10 +105,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" :disabled="retail_fee=='无效金额'"  @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          缴费
         </el-button>
       </div>
     </el-dialog>
@@ -374,7 +374,7 @@
         }).then(res =>{
           this.$notify({
             title: 'Success',
-            message: 'Delete Successfully',
+            message: '退费成功!',
             type: 'success',
             duration: 2000
           })

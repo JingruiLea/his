@@ -89,10 +89,10 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" :disabled="retail_fee=='无效金额'"  @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          退药
         </el-button>
       </div>
     </el-dialog>
@@ -304,7 +304,7 @@
             type: 'success',
             duration: 2000
           })
-          row.status = '已发药'
+          row.status = '已取药'
         })
       },
       handleUpdate(row) {
