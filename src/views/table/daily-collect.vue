@@ -57,30 +57,27 @@
             prop="id"
             label="收费编号"
             sortable
+            align="center"
             width="150">
           </el-table-column>
           <el-table-column
             prop="type"
+            align="center"
             label="类型">
           </el-table-column>
           <el-table-column
             prop="medical_record_id"
+            align="center"
             label="病历号">
           </el-table-column>
           <el-table-column
-            prop="should_pay"
-            label="应收">
-          </el-table-column>
-          <el-table-column
-            prop="truely_pay"
-            label="实收">
-          </el-table-column>
-          <el-table-column
-            prop="retail_fee"
-            label="找零">
+            prop="cost"
+            align="center"
+            label="金额">
           </el-table-column>
           <el-table-column
             prop="create_time"
+            align="center"
             label="创建日期">
           </el-table-column>
         </el-table>
