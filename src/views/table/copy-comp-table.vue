@@ -395,7 +395,6 @@
             this.getList()
           })
           this.getList()
-        })
       },
       handleUpdate(row) {
         this.temp = Object.assign({}, row) // copy obj

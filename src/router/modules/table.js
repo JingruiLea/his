@@ -55,22 +55,10 @@ const tableRouter = {
       meta: { title: '药品目录管理' }
     },
     {
-      path: 'expense-classification',
-      component: () => import('@/views/table/expense-classification'),
-      name: 'expense-classification',
-      meta: { title: '收费目录管理' }
-    },
-    {
-      path: 'daily-collect',
-      component: () => import('@/views/table/daily-collect'),
-      name: 'daily-collect',
-      meta: { title: '收费员日结' }
-    },
-    {
-      path: 'daily-check',
-      component: () => import('@/views/table/daily-check'),
-      name: 'daily-check',
-      meta: { title: '日结核对' }
+      path: 'schedule',
+      component: () => import('@/views/example/paiban'),
+      name: 'schedule',
+      meta: { title: '排班管理' }
     }
   ]
 }
