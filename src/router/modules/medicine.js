@@ -17,6 +17,12 @@ const medicineRouter = {
       component: () => import('@/views/example/sendDrug'),
       name: 'index',
       meta: { title: '门诊药房', noCache: true }
+    },
+    {
+      path: 'drugs',
+      component: () => import('@/views/table/drugs'),
+      name: 'drugs',
+      meta: { title: '药品目录管理' }
     }
   ]
 }
