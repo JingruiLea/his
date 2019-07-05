@@ -32,15 +32,16 @@
     </el-aside>
     <el-main v-if="medicalRecord && medicalRecord.id && medicalRecord.id != null">
       {{`正在看诊:${registrationInfo.patient_name}, 病历号${this.medicalRecord.id}`}}
+      <el-button style="display: inline-block;" type="danger" size="mini" @click="endMedicalRecord">诊毕</el-button>
       <el-tabs v-model="activeIndex" @tab-click="handleClick">
         <el-tab-pane label="病历首页" name="0"></el-tab-pane>
         <el-tab-pane label="初步诊断" name="1"></el-tab-pane>
         <el-tab-pane label="检查" :disabled="medicalRecord.status != '已提交'" name="2"></el-tab-pane>
         <el-tab-pane label="检验" :disabled="medicalRecord.status != '已提交'" name="3"></el-tab-pane>
+        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="7"></el-tab-pane>
         <el-tab-pane label="处置" :disabled="medicalRecord.status != '已提交'" name="4"></el-tab-pane>
         <el-tab-pane label="成药处方" :disabled="medicalRecord.status != '已提交'" name="5"></el-tab-pane>
         <el-tab-pane label="草药处方" :disabled="medicalRecord.status != '已提交'" name="6"></el-tab-pane>
-        <el-tab-pane label="门诊确诊" :disabled="medicalRecord.status != '已提交'" name="7"></el-tab-pane>
       </el-tabs>
       <div>
         <el-row>
@@ -57,6 +58,7 @@
               <el-input
                 placeholder="模板搜索"
                 v-model="templateName"
+                v-if="activeIndex <= '7'"
               >
               </el-input>
               <div v-if="activeIndex=='0' || activeIndex == '1' || activeIndex == '7'">
@@ -74,7 +76,7 @@
                 ></el-tree>
               </div>
               <el-tree
-                v-if="activeIndex > '1' && activeIndex != '7'"
+                v-if="activeIndex > '1' && activeIndex < '7'"
                 ref="tree2"
                 :filter-node-method="filterNode"
                 :data="templateClasses2"
@@ -291,7 +293,7 @@
   import MedicalRecordPreviewer from "./medical-record-previewer";
   import {getDisease} from '../../../src/api/disease-directorys'
   import DiagnoseEdit from "./components/diagnose-edit";
-  import {update as updateDiagnose, submitEnd} from '../../api/diagnose'
+  import {update as updateDiagnose, submitEnd, getEndDiagnose} from '../../api/diagnose'
   import ExamTable from "./components/ExamTable";
   import ExamEdit from "./components/ExamEdit";
   import {create as createExam, update as updateExam, detail as detailExam} from '@/api/exam'
@@ -736,6 +738,7 @@
           case '1': {
             this.getDiagnoseTemplateList()
             this.preview = false
+            this.diagnose = this.medicalRecord.diagnose
             this.creatingTemplate = false
             this.previewIsTemplate = false
             if (this.medicalRecord.status == '已提交') {
@@ -791,6 +794,7 @@
             this.creatingTemplate = false
             this.previewIsTemplate = false
             this.hasSubmit = false
+            getEndDiagnose({medical_record_id:this.medicalRecord.id}).then(res=>this.diagnose = res.data)
             break
           }
         }
@@ -863,20 +867,34 @@
             })
         } else{
           submitEnd({medical_record_id:this.medicalRecord.id, diagnose:this.diagnose}).then(res=>{
-            confirmMedicalRecord({id:this.medicalRecord.id}).then(res=>{
+            // confirmMedicalRecord({id:this.medicalRecord.id}).then(res=>{
               this.$notify({
                 title: 'Success',
-                message: '已诊毕!',
+                message: '提交成功!',
                 type: 'success',
                 duration: 2000
               })
-              this.medicalRecord.status = '已诊毕'
-              this.getList()
-              this.medicalRecord = null
-              this.activeIndex = '0'
-            })
+            //   this.medicalRecord.status = '已诊毕'
+            //   this.getList()
+            //   this.medicalRecord = null
+            //   this.activeIndex = '0'
+            // })
           })
         }
+      },
+      endMedicalRecord(){
+        confirmMedicalRecord({id:this.medicalRecord.id}).then(res=>{
+          this.$notify({
+            title: 'Success',
+            message: '已诊毕!',
+            type: 'success',
+            duration: 2000
+          })
+          this.medicalRecord.status = '已诊毕'
+          this.getList()
+          this.medicalRecord = null
+          this.activeIndex = '0'
+        })
       },
       getExamTemplateList(type) {
         getExamTemplateList({type: type}).then(res => {

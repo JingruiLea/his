@@ -72,6 +72,7 @@
 <script>
   import {list as listExam, create as createExam, update as updateExam,send as sendExam, _delete as deleteExam, detail as detailExam} from '@/api/exam'
   import {create as createTemplate, update as updateTemplate , _delete as deleteTemplate} from '@/api/examTemplate'
+  import {listPaid as listByType, getResult} from '@/api/exam'
 
 
 
@@ -95,8 +96,9 @@
     },
     watch:{
       type(){
-        if(this.medical_record_id)
+        if(this.medical_record_id){
           this.getExam()
+        }
       }
     },
     methods:{
@@ -191,6 +193,15 @@
             duration: 2000
           })
           this.$emit('fresh')
+        })
+      },
+      getResult(){
+        getResult({exam_item_id:row.id}).then(res=>{
+          this.someInfo = res.data
+          this.picLink = []
+          res.data.file.forEach(ele=>{
+            this.picLink.push(window.location.protocol + '//' + window.location.hostname + ':8080' + `/${ele.saveName}`)
+          })
         })
       },
       deleteTemplate(){

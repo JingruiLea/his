@@ -16,6 +16,14 @@ export function submitEnd(data) {
   })
 }
 
+export function getEndDiagnose(data) {
+  return request({
+    url: '/medicalRecord/getEndDiagnose',
+    method: 'post',
+    data
+  })
+}
+
 export function getChargeItems(data) {
   return request({
     url: '/diagnoseTemplate/list',
