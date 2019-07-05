@@ -8,27 +8,15 @@ const chartsRouter = {
   redirect: 'noRedirect',
   name: 'Charts',
   meta: {
-    title: 'Charts',
-    icon: 'chart'
+    title: '门诊财务管理',
+    icon: 'money'
   },
   children: [
     {
-      path: 'keyboard',
-      component: () => import('@/views/charts/keyboard'),
-      name: 'KeyboardChart',
-      meta: { title: 'Keyboard Chart', noCache: true }
-    },
-    {
-      path: 'line',
-      component: () => import('@/views/charts/line'),
-      name: 'LineChart',
-      meta: { title: 'Line Chart', noCache: true }
-    },
-    {
-      path: 'mix-chart',
-      component: () => import('@/views/charts/mix-chart'),
-      name: 'MixChart',
-      meta: { title: 'Mix Chart', noCache: true }
+      path: 'expense-classification',
+      component: () => import('@/views/table/expense-classification'),
+      name: 'expense-classification',
+      meta: { title: '收费目录管理' }
     },
     {
       path: 'departmentStatistics',
@@ -43,22 +31,16 @@ const chartsRouter = {
       meta: { title: '开单科室工作量统计', noCache: true }
     },
     {
-      path: 'personalStatistics',
-      component: () => import('@/views/charts/personalStatistics'),
-      name: 'personalStatistics',
-      meta: { title: '个人工作量统计', noCache: true }
-    },
-    {
       path: 'doctorStatistics',
       component: () => import('@/views/charts/doctorStatistics'),
       name: 'doctorStatistics',
       meta: { title: '门诊医生个人工作量统计', noCache: true }
     },
     {
-      path: 'techStatistics',
-      component: () => import('@/views/charts/techStatistics'),
-      name: 'techStatistics',
-      meta: { title: '医技医生个人工作量统计', noCache: true }
+      path: 'daily-check',
+      component: () => import('@/views/table/daily-check'),
+      name: 'daily-check',
+      meta: { title: '日结核对' }
     }
   ]
 }

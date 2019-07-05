@@ -3,14 +3,14 @@
     <el-row>
      <el-col :span="8">
        <el-row class="demo-input-suffix">
-         <el-col :span="16">
+         <el-col :span="18">
          <el-input
            placeholder="输入日期以筛选"
            suffix-icon="el-icon-date"
            v-model="dateInput">
          </el-input>
          </el-col>
-         <el-col :span="8">
+         <el-col :span="6">
          <el-button class="filter-item" style="margin-left: 10px;float: right;" type="primary" icon="el-icon-edit" @click="handleCreate()">
            新日结
          </el-button>
@@ -241,7 +241,7 @@
       },
       changeDate(){
         console.log(this.collectDate)
-        let max = '1999-01-01'
+        let max = '1999-01-01 00:00:00'
         for(let item of this.fullList){
           if(max < item.end_time){
             max = item.end_time

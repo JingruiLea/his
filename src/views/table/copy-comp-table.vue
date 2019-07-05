@@ -217,15 +217,15 @@
         statusOptions: ['published', 'draft', 'deleted'],
         canMultiDelete: false,
         temp: {
-          username: "admin2",
-          password: "12345",
-          real_name: "admin",
-          department_id: 1,
-          role_id: 1,
+          username: "",
+          password: "",
+          real_name: "",
+          department_id: null,
+          role_id: null,
           participate_in_scheduling: true,
-          title: "主任医师",
-          role_name: "医院管理员",
-          department_name: "神经科"
+          title: "",
+          role_name: "",
+          department_name: ""
         },
         dialogFormVisible: false,
         dialogStatus: '',
@@ -256,8 +256,8 @@
         })
         _delete({data:data}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })
@@ -338,7 +338,7 @@
       },
       handleModifyStatus(row, status) {
         this.$message({
-          message: '操作Success',
+          message: '操作成功',
           type: 'success'
         })
         row.status = status
@@ -362,15 +362,15 @@
       },
       resetTemp() {
         this.temp = {
-          username: "admin2",
-          password: "12345",
-          real_name: "admin",
-          department_id: 1,
-          role_id: 1,
+          username: "",
+          password: "",
+          real_name: "",
+          department_id: null,
+          role_id: null,
           participate_in_scheduling: true,
-          title: "主任医师",
-          role_name: "医院管理员",
-          department_name: "神经科"
+          title: "",
+          role_name: "",
+          department_name: ""
         }
       },
       handleCreate() {
@@ -382,17 +382,18 @@
         })
       },
       createData() {
-        add(this.temp).then(res=>{
-          this.list.unshift(this.temp)
-          this.dialogFormVisible = false
-          this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
-            type: 'success',
-            duration: 2000
+          add(this.temp).then(res=>{
+            this.list.unshift(this.temp)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.getList()
           })
           this.getList()
-        })
       },
       handleUpdate(row) {
         this.temp = Object.assign({}, row) // copy obj
@@ -418,8 +419,8 @@
               }
               this.dialogFormVisible = false
               this.$notify({
-                title: 'Success',
-                message: 'Update Successfully',
+                title: '成功',
+                message: '更新成功',
                 type: 'success',
                 duration: 2000
               })
@@ -432,8 +433,8 @@
         console.log(`line 354: delete ${row}`)
         _delete({data:[row.uid]}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })

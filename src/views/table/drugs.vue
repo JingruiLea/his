@@ -246,17 +246,17 @@
         statusOptions: ['published', 'draft', 'deleted'],
         showReviewer: false,
         temp: {
-          id:12,
-          code:"86979474000209",
-          name:"黄连颗粒",
-          format:"0.5g/3g袋",
-          unit:"袋",
-          manufacturer:"江阴天江药业有限公司",
-          dosage_form:115,
-          type:"中成药",
-          price:1.07,
-          pinyin:"HLKL",
-          stock:100
+          id:null,
+          code:"",
+          name:"",
+          format:"",
+          unit:"",
+          manufacturer:"",
+          dosage_form:null,
+          type:"",
+          price:null,
+          pinyin:"",
+          stock:null
         },
         dialogFormVisible: false,
         dialogStatus: '',
@@ -284,8 +284,8 @@
         })
         _delete({data:data}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })
@@ -343,7 +343,7 @@
       },
       handleModifyStatus(row, status) {
         this.$message({
-          message: '操作Success',
+          message: '操作成功',
           type: 'success'
         })
         row.status = status
@@ -364,17 +364,17 @@
       },
       resetTemp() {
         this.temp = {
-          id:12,
-          code:"86979474000209",
-          name:"黄连颗粒",
-          format:"0.5g/3g袋",
-          unit:"袋",
-          manufacturer:"江阴天江药业有限公司",
-          dosage_form:115,
-          type:"中成药",
-          price:1.07,
-          pinyin:"HLKL",
-          stock:100
+          id:null,
+          code:"",
+          name:"",
+          format:"",
+          unit:"",
+          manufacturer:"",
+          dosage_form:null,
+          type:"",
+          price:null,
+          pinyin:"",
+          stock:null
         }
       },
       handleCreate() {
@@ -423,8 +423,8 @@
               }
               this.dialogFormVisible = false
               this.$notify({
-                title: 'Success',
-                message: 'Update Successfully',
+                title: '成功',
+                message: '更新成功',
                 type: 'success',
                 duration: 2000
               })
@@ -437,8 +437,8 @@
         console.log(`line 354: delete ${row}`)
         _delete({data:[row.id]}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })

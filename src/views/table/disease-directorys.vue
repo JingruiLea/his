@@ -107,6 +107,9 @@
         <el-form-item label="名称" prop="username">
           <el-input v-model="temp.name" />
         </el-form-item>
+        <el-form-item label="国际标准码" prop="username">
+          <el-input v-model="temp.code" />
+        </el-form-item>
         <el-form-item label="拼音" prop="username">
           <el-input v-model="temp.pinyin" />
         </el-form-item>
@@ -217,11 +220,11 @@
         showReviewer: false,
         tempClassification: {},
         temp: {
-          id: 115,
-          code: "A06.051",
-          classification_name: "阿米巴病",
-          name: "急性阿米巴病",
-          pinyin: "JXAMBB",
+          id: null,
+          code: "",
+          classification_name: "",
+          name: "",
+          pinyin: "",
           custom_name: "",
           custom_pinyin: ""
         },
@@ -247,8 +250,8 @@
         })
         _delete({data:data}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })
@@ -345,7 +348,7 @@
       },
       handleModifyStatus(row, status) {
         this.$message({
-          message: '操作Success',
+          message: '操作成功',
           type: 'success'
         })
         row.status = status
@@ -366,14 +369,25 @@
       },
       resetTempDisease() {
         this.tempDisease = {
-          id: 115,
-            code: "A06.051",
-            classification_name: "阿米巴病",
-            name: "急性阿米巴病",
-            pinyin: "JXAMBB",
-            custom_name: "",
-            custom_pinyin: "",
-            classification_id: 1
+          id: null,
+          code: "",
+          classification_name: "",
+          name: "",
+          pinyin: "",
+          custom_name: "",
+          custom_pinyin: "",
+          classification_id: null
+        }
+      },
+      resetTemp(){
+        this.temp = {
+          id: null,
+          code: "",
+          classification_name: "",
+          name: "",
+          pinyin: "",
+          custom_name: "",
+          custom_pinyin: ""
         }
       },
       handleCreate() {
@@ -393,8 +407,8 @@
         add(this.temp).then(res=>{
           this.dialogFormVisible = false
           this.$notify({
-            title: 'Success',
-            message: 'Created Successfully',
+            title: '成功',
+            message: '创建成功',
             type: 'success',
             duration: 2000
           })
@@ -427,8 +441,8 @@
               }
               this.dialogFormVisible = false
               this.$notify({
-                title: 'Success',
-                message: 'Update Successfully',
+                title: '成功',
+                message: '更新成功',
                 type: 'success',
                 duration: 2000
               })
@@ -441,8 +455,8 @@
         console.log(`line 354: delete ${row}`)
         _delete({data:[row.id]}).then(res =>{
           this.$notify({
-            title: 'Success',
-            message: 'Delete Successfully',
+            title: '成功',
+            message: '删除成功',
             type: 'success',
             duration: 2000
           })

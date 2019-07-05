@@ -4,8 +4,8 @@
       <el-col :span="11">
         <el-row class="demo-input-suffix">
           <el-col :span="10">
-            <el-select @change="handleFilter" v-model="tempCollector.id" placeholder="请选择收费员" class="filter-item" style="width: 10em">
-              <el-option v-for="item,index in collectors" :key="index" :label="item.name" :value="item.id" />
+            <el-select @change="handleFilter" v-model="tempCollector.uid" placeholder="请选择收费员" class="filter-item" style="width: 10em">
+              <el-option v-for="item,index in collectors" :key="index" :label="item.real_name" :value="item.uid" />
             </el-select>
           </el-col>
           <el-col :span="11" :offset="1">
@@ -13,6 +13,7 @@
               v-model="collectDate"
               type="daterange"
               value-format="yyyy-MM-dd HH:mm:ss"
+              unlink-panels
               range-separator="-"
               start-placeholder="开始日期"
               end-placeholder="结束日期">
@@ -104,7 +105,7 @@
 
 <script>
   import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
-  import {getAll, detail, collect, update, init} from '@/api/daily-check'
+  import {getAll, detail, collect, update, init, check} from '@/api/daily-check'
   import waves from '@/directive/waves' // waves directive
   import { parseTime } from '@/utils'
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -170,8 +171,8 @@
           }]
         },
         tempCollector:{
-          id:10001,
-          name:'挂号收费员(测试'
+          uid:10001,
+          real_name:'挂号收费员(测试'
         },
         dateInput:"",
         currentRow: null,
@@ -219,10 +220,14 @@
       this.getCollectors()
     },
     methods: {
+      handleEdit(row){
+        row.checked=true
+        check(row)
+      },
       handleFilter(){
-        console.log(this.tempCollector.id)
+        console.log(this.tempCollector.uid)
         this.historyList = this.fullList.filter(ele=>{
-          if(ele.user_id == this.tempCollector.id)
+          if(ele.user_id == this.tempCollector.uid)
             return true;
         })
         console.log(this.historyList)
@@ -230,6 +235,7 @@
           if(ele.start_time >= this.collectDate[0] && ele.end_time <= this.collectDate[1])
             return true;
         })
+
       },
       getCollectors() {
         this.listLoading = true
@@ -238,7 +244,7 @@
           bus.collectors = data
           console.log(data)
           this.collectorList = data
-          this.tempCollector = {id:10001,name:'挂号收费员(测试'}
+          this.tempCollector = {uid:10001,real_name:'挂号收费员(测试'}
           console.log(this.tempCollector)
           // Just to simulate the time of the request
           setTimeout(() => {
@@ -264,11 +270,9 @@
           this.historyList = data
           this.fullList = data
           this.total = data.length
-
+          this.handleFilter()
           // Just to simulate the time of the request
-          setTimeout(() => {
-            this.listLoading = false
-          }, 1.5 * 1000)
+          this.listLoading = false
         })
       },
       setCurrent(row) {

@@ -36,3 +36,10 @@ export function init(data) {
     data
   })
 }
+export function check(data) {
+  return request({
+    url: '/dailyCheck/check',
+    method: 'post',
+    data
+  })
+}
