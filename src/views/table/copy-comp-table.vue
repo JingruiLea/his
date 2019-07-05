@@ -147,7 +147,6 @@
   import waves from '@/directive/waves' // waves directive
   import Pagination from '@/components/Pagination' // secondary package based on el-pagination
   import bus from '@/bus.js'
-  import UploadExcel from "../excel/upload-excel";
   import axios from 'axios'
 
   const calendarTypeOptions = [
@@ -165,7 +164,7 @@
 
   export default {
     name: 'CopyComplexTable',
-    components: {UploadExcel, Pagination },
+    components: {Pagination },
     directives: { waves },
     filters: {
       statusFilter(status) {

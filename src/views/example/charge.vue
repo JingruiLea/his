@@ -2,28 +2,28 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="medicalRecordId" placeholder="病历号" style="width: 200px;" class="filter-item" @keyup.enter.native="getList" />
-      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select>
+<!--      <el-input v-model="listQuery.name" placeholder="名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />-->
+<!--      <el-select v-model="listQuery.importance" placeholder="请选择排班科室" clearable style="width: 90px" class="filter-item">-->
+<!--        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />-->
+<!--      </el-select>-->
+<!--      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">-->
+<!--        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />-->
+<!--      </el-select>-->
+<!--      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">-->
+<!--        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />-->
+<!--      </el-select>-->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="getList">
-        Search
+        搜索
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
-        新增
-      </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button>
-      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox>
+<!--      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">-->
+<!--        新增-->
+<!--      </el-button>-->
+<!--      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">-->
+<!--        Export-->
+<!--      </el-button>-->
+<!--      <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">-->
+<!--        reviewer-->
+<!--      </el-checkbox>-->
     </div>
 
     <el-table
@@ -53,12 +53,12 @@
       </el-table-column>
       <el-table-column label="数量" prop="id"  align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.quantity }}</span>
+          <span>{{ row.amount }}</span>
         </template>
       </el-table-column>
       <el-table-column label="价格" prop="id" align="center" >
         <template slot-scope="{row}">
-          <span>{{ row.fee * row.quantity}}</span>
+          <span>{{ row.fee * row.amount}}</span>
         </template>
       </el-table-column>
       <el-table-column label="开立医生" prop="id" align="center" >
@@ -237,9 +237,11 @@
         let medical_record_id = parseInt(this.medicalRecordId)
         getHistoryChargeItems({medical_record_id}).then(response => {
           const {data} = response
-          this.list = data
+          this.list = data.filter(ele=>{
+            return ele.item_status != '已完成' && ele.item_status != '已取药'
+          })
           this.fullList = this.list
-          this.total = data.length
+          this.total = this.list.length
         })
       },
       handleFilter() {

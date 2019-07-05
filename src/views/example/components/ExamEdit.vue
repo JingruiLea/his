@@ -4,8 +4,8 @@
       <div v-if="!creatingTemplate && !template">
         <el-button type="danger" size="mini" @click="reset" >清空</el-button>
         <el-button type="primary" size="mini" @click="saveAsTemplate" >生成模板</el-button>
-        <el-button type="primary" size="mini" @click="tempSave" >暂存</el-button>
-        <el-button type="success" size="mini" @click="next" >提交</el-button>
+        <el-button type="primary" size="mini" @click="tempSave" :disabled="exam.status == '已提交'">暂存</el-button>
+        <el-button type="success" size="mini" @click="next" :disabled="exam.status == '已提交'" >提交</el-button>
       </div>
       <div v-if="template">
         <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -85,6 +85,7 @@
         initExam :{
           medical_record_id:this.exam.medical_record_id,
           non_drug_id_list: [],
+          nonDrugs:[],
           id:this.exam.id,
           template_name:this.exam.template_name,
           display_type:this.exam.display_type,
@@ -130,6 +131,9 @@
               type: 'success',
               duration: 2000
             })
+            let temp = JSON.parse(JSON.stringify(this.exam))
+            temp.status = '已提交'
+            this.$emit('update:exam', temp)
           })
         })
       },

@@ -4,8 +4,8 @@
       <div v-if="!creatingTemplate && !template">
         <el-button type="danger" size="mini" @click="reset" >清空</el-button>
         <el-button type="primary" size="mini" @click="saveAsTemplate" >生成模板</el-button>
-        <el-button type="primary" size="mini" @click="tempSave" >暂存</el-button>
-        <el-button type="success" size="mini" @click="next" >提交</el-button>
+        <el-button type="primary" size="mini" @click="tempSave" :disabled="pres.status == '已提交'">暂存</el-button>
+        <el-button type="success" size="mini" @click="next" :disabled="pres.status == '已提交'">提交</el-button>
       </div>
       <div v-if="template">
         <el-button type="danger" size="mini" @click="back">返回</el-button>
@@ -157,6 +157,9 @@
               type: 'success',
               duration: 2000
             })
+            let temp = JSON.parse(JSON.stringify(this.pres))
+            temp.status = '已提交'
+            this.$emit('update:pres', temp)
           })
         })
       },

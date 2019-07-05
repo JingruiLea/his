@@ -256,6 +256,7 @@
         this.total = 0
         let medical_record_id = parseInt(this.medicalRecordId)
         listByType({medical_record_id,type:this.type}).then(res=>{
+          if(!res.data[0]) return
           this.list = res.data[0].exam_item.filter(ele=>ele.status=='已登记' || ele.status =='已完成')
           this.fullList = this.list
           this.total = this.list.length
@@ -335,6 +336,8 @@
         this.temp.timestamp = new Date(this.temp.timestamp)
         this.someInfo.exam_item_id = row.id
         this.someInfo._uid = parseInt(getToken())
+        this.someInfo.advice = ""
+        this.someInfo.result = ""
         this.dialogStatus = 'update'
         this.dialogFormVisible = true
         this.should_pay = row.fee * row.quantity

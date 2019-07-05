@@ -73,6 +73,9 @@ let bus = new Vue({
   },
   created(){
     this.getDiseaseClassifications()
+    this.getDepartments()
+    this.getUsers()
+    this.getRegistrationLevel()
   }
 })
 
